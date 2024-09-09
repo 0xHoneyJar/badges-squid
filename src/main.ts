@@ -130,7 +130,7 @@ async function processQueueBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: new Date(header.timestamp),
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
   });
 
   entities.queueBoosts.set(id, queueBoost);
@@ -150,7 +150,7 @@ async function processActivateBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: new Date(header.timestamp),
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
   });
 
   entities.activateBoosts.set(id, activateBoost);

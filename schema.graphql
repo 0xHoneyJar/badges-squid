@@ -8,7 +8,7 @@ type QueueBoost @entity {
   user: String!
   validator: String!
   amount: BigInt!
-  timestamp: DateTime!
+  timestamp: BigInt!
 }
 
 type ActivateBoost @entity {
@@ -16,5 +16,5 @@ type ActivateBoost @entity {
   user: String!
   validator: String!
   amount: BigInt!
-  timestamp: DateTime!
+  timestamp: BigInt!
 }
