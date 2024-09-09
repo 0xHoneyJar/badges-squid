@@ -7,12 +7,9 @@ import {
   Transaction as _Transaction,
 } from "@subsquid/evm-processor";
 import { assertNotNull } from "@subsquid/util-internal";
-import * as bgtAbi from "./abi/BGT"; // You'll need to add this ABI
-import * as factoryAbi from "./abi/Factory";
-import * as honeyVaultAbi from "./abi/HoneyVault";
-import * as xkdkAbi from "./abi/XKDK";
-//import * as kodiakAbi from "./abi/Kodiak"; // You'll need to add this ABI
-import { BGT_ADDRESS, FACTORY_ADDRESS, XKDK_ADDRESS } from "./addresses";
+import * as badgesAbi from "./abi/badges";
+
+const CUB_ADDRESS = "0x886D2176D899796cD1AfFA07Eff07B9b2B80f1be";
 
 export const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/berachain-bartio")
@@ -28,38 +25,14 @@ export const processor = new EvmBatchProcessor()
     },
   })
   .setBlockRange({
-    from: 2209030, // deployment block of factory
+    from: 92754, // deployment block of factory
   })
   .addLog({
-    address: [FACTORY_ADDRESS], // Factory contract address
-    topic0: [factoryAbi.events.NewLocker.topic],
-  })
-  .addLog({
+    address: [CUB_ADDRESS], // Factory contract address
     topic0: [
-      honeyVaultAbi.events.Initialized.topic,
-      honeyVaultAbi.events.Deposited.topic,
-      honeyVaultAbi.events.Withdrawn.topic,
-      honeyVaultAbi.events.LockedUntil.topic,
-      honeyVaultAbi.events.Staked.topic,
-      honeyVaultAbi.events.Unstaked.topic,
-      honeyVaultAbi.events.Fees.topic,
-      honeyVaultAbi.events.RewardsClaimed.topic,
+      badgesAbi.events.TransferBatch.topic,
+      badgesAbi.events.TransferSingle.topic,
     ],
-    transaction: true,
-  })
-  .addLog({
-    address: [BGT_ADDRESS],
-    topic0: [
-      bgtAbi.events.ActivateBoost.topic,
-      bgtAbi.events.QueueBoost.topic,
-      bgtAbi.events.CancelBoost.topic,
-      bgtAbi.events.DropBoost.topic,
-    ],
-  })
-  .addLog({
-    address: [XKDK_ADDRESS],
-    topic0: [xkdkAbi.events.FinalizeRedeem.topic, xkdkAbi.events.Redeem.topic],
-    transaction: true,
   });
 
 export type Fields = EvmBatchProcessorFields<typeof processor>;
