@@ -8,8 +8,8 @@ import {
 } from "@subsquid/evm-processor";
 import { assertNotNull } from "@subsquid/util-internal";
 import * as badgesAbi from "./abi/badges";
-
-const CUB_ADDRESS = "0x886D2176D899796cD1AfFA07Eff07B9b2B80f1be";
+import * as bgtAbi from "./abi/bgt";
+import { BGT_ADDRESS, CUB_ADDRESS, THJ_VALIDATOR_ADDRESS } from "./addresses";
 
 export const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/berachain-bartio")
@@ -33,6 +33,11 @@ export const processor = new EvmBatchProcessor()
       badgesAbi.events.TransferBatch.topic,
       badgesAbi.events.TransferSingle.topic,
     ],
+  })
+  .addLog({
+    address: [BGT_ADDRESS],
+    topic0: [bgtAbi.events.QueueBoost.topic, bgtAbi.events.ActivateBoost.topic],
+    topic2: [THJ_VALIDATOR_ADDRESS],
   });
 
 export type Fields = EvmBatchProcessorFields<typeof processor>;

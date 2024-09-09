@@ -1,27 +1,34 @@
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
-import { BadgeHolder } from "./model";
+import * as bgtAbi from "./abi/bgt";
+import { ActivateBoost, BadgeHolder, QueueBoost } from "./model";
 import { processor } from "./processor";
 
 processor.run(new TypeormDatabase(), async (ctx) => {
   const entities = {
     badgeHolders: new Map<string, BadgeHolder>(),
+    queueBoosts: new Map<string, QueueBoost>(),
+    activateBoosts: new Map<string, ActivateBoost>(),
   };
 
   for (const block of ctx.blocks) {
     for (const log of block.logs) {
-      await processLog(log, ctx, entities);
+      await processLog(log, ctx, entities, block.header);
     }
   }
 
   await saveEntities(ctx, entities);
 });
 
-async function processLog(log: any, ctx: any, entities: any) {
+async function processLog(log: any, ctx: any, entities: any, header: any) {
   if (badgesAbi.events.TransferSingle.is(log)) {
     await processBadgeTransferSingle(log, ctx, entities);
   } else if (badgesAbi.events.TransferBatch.is(log)) {
     await processBadgeTransferBatch(log, ctx, entities);
+  } else if (bgtAbi.events.QueueBoost.is(log)) {
+    await processQueueBoost(log, ctx, entities, header);
+  } else if (bgtAbi.events.ActivateBoost.is(log)) {
+    await processActivateBoost(log, ctx, entities, header);
   }
 }
 
@@ -109,6 +116,48 @@ async function updateBadgeHoldings(
   entities.badgeHolders.set(address, holder);
 }
 
+async function processQueueBoost(
+  log: any,
+  ctx: any,
+  entities: any,
+  header: any
+) {
+  const { sender, validator, amount } = bgtAbi.events.QueueBoost.decode(log);
+  const id = `${log.transactionHash}-${log.logIndex}`;
+
+  const queueBoost = new QueueBoost({
+    id,
+    user: sender.toLowerCase(),
+    validator: validator.toLowerCase(),
+    amount: BigInt(amount),
+    timestamp: new Date(header.timestamp),
+  });
+
+  entities.queueBoosts.set(id, queueBoost);
+}
+
+async function processActivateBoost(
+  log: any,
+  ctx: any,
+  entities: any,
+  header: any
+) {
+  const { sender, validator, amount } = bgtAbi.events.ActivateBoost.decode(log);
+  const id = `${log.transactionHash}-${log.logIndex}`;
+
+  const activateBoost = new ActivateBoost({
+    id,
+    user: sender.toLowerCase(),
+    validator: validator.toLowerCase(),
+    amount: BigInt(amount),
+    timestamp: new Date(header.timestamp),
+  });
+
+  entities.activateBoosts.set(id, activateBoost);
+}
+
 async function saveEntities(ctx: any, entities: any) {
   await ctx.store.upsert(Array.from(entities.badgeHolders.values()));
+  await ctx.store.upsert(Array.from(entities.queueBoosts.values()));
+  await ctx.store.upsert(Array.from(entities.activateBoosts.values()));
 }

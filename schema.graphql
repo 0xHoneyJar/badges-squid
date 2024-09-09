@@ -2,3 +2,19 @@ type BadgeHolder @entity {
   id: ID!
   holdings: JSON!
 }
+
+type QueueBoost @entity {
+  id: ID!
+  user: String!
+  validator: String!
+  amount: BigInt!
+  timestamp: DateTime!
+}
+
+type ActivateBoost @entity {
+  id: ID!
+  user: String!
+  validator: String!
+  amount: BigInt!
+  timestamp: DateTime!
+}
