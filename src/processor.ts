@@ -37,8 +37,12 @@ export const processor = new EvmBatchProcessor()
   .addLog({
     address: [BGT_ADDRESS],
     topic0: [bgtAbi.events.QueueBoost.topic, bgtAbi.events.ActivateBoost.topic],
-    topic2: [THJ_VALIDATOR_ADDRESS],
+    topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
   });
+
+function formatAddressTopic(address: string): string {
+  return "0x" + address.replace("0x", "").padStart(64, "0").toLowerCase();
+}
 
 export type Fields = EvmBatchProcessorFields<typeof processor>;
 export type Block = BlockHeader<Fields>;
