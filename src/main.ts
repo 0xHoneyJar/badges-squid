@@ -1,3 +1,4 @@
+import { Log } from "@subsquid/evm-processor";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
 import * as bgtAbi from "./abi/bgt";
@@ -117,13 +118,13 @@ async function updateBadgeHoldings(
 }
 
 async function processQueueBoost(
-  log: any,
+  log: Log,
   ctx: any,
   entities: any,
   header: any
 ) {
   const { sender, validator, amount } = bgtAbi.events.QueueBoost.decode(log);
-  const id = `${log.transactionHash}-${log.logIndex}`;
+  const id = `${log.transaction?.hash}-${log.logIndex}`;
 
   const queueBoost = new QueueBoost({
     id,
@@ -137,13 +138,13 @@ async function processQueueBoost(
 }
 
 async function processActivateBoost(
-  log: any,
+  log: Log,
   ctx: any,
   entities: any,
   header: any
 ) {
   const { sender, validator, amount } = bgtAbi.events.ActivateBoost.decode(log);
-  const id = `${log.transactionHash}-${log.logIndex}`;
+  const id = `${log.transaction?.hash}-${log.logIndex}`;
 
   const activateBoost = new ActivateBoost({
     id,

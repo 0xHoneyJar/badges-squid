@@ -17,13 +17,6 @@ export const processor = new EvmBatchProcessor()
     url: assertNotNull(process.env.RPC_BERA_HTTP, "No RPC endpoint supplied"),
   })
   .setFinalityConfirmation(5)
-  .setFields({
-    transaction: {
-      from: true,
-      to: true,
-      hash: true,
-    },
-  })
   .setBlockRange({
     from: 92754, // deployment block of factory
   })
@@ -38,6 +31,7 @@ export const processor = new EvmBatchProcessor()
     address: [BGT_ADDRESS],
     topic0: [bgtAbi.events.QueueBoost.topic, bgtAbi.events.ActivateBoost.topic],
     topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
+    transaction: true,
   });
 
 function formatAddressTopic(address: string): string {
