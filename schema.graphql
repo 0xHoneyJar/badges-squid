@@ -1,6 +1,15 @@
 type BadgeHolder @entity {
   id: ID!
   holdings: JSON!
+  badgesHeld: [BadgeAmount!]! @derivedFrom(field: "holder")
+  totalAmount: BigInt!
+}
+
+type BadgeAmount @entity {
+  id: ID!
+  badgeId: String!
+  amount: BigInt!
+  holder: BadgeHolder!
 }
 
 type QueueBoost @entity {

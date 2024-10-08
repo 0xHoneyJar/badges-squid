@@ -1,4 +1,5 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, JSONColumn as JSONColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, JSONColumn as JSONColumn_, OneToMany as OneToMany_, BigIntColumn as BigIntColumn_} from "@subsquid/typeorm-store"
+import {BadgeAmount} from "./badgeAmount.model"
 
 @Entity_()
 export class BadgeHolder {
@@ -11,4 +12,10 @@ export class BadgeHolder {
 
     @JSONColumn_({nullable: false})
     holdings!: unknown
+
+    @OneToMany_(() => BadgeAmount, e => e.holder)
+    badgesHeld!: BadgeAmount[]
+
+    @BigIntColumn_({nullable: false})
+    totalAmount!: bigint
 }

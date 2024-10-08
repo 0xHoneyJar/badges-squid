@@ -2,12 +2,13 @@ import { Log } from "@subsquid/evm-processor";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
 import * as bgtAbi from "./abi/bgt";
-import { ActivateBoost, BadgeHolder, QueueBoost } from "./model";
+import { ActivateBoost, BadgeAmount, BadgeHolder, QueueBoost } from "./model";
 import { processor } from "./processor";
 
 processor.run(new TypeormDatabase(), async (ctx) => {
   const entities = {
     badgeHolders: new Map<string, BadgeHolder>(),
+    badgeAmounts: new Map<string, BadgeAmount>(),
     queueBoosts: new Map<string, QueueBoost>(),
     activateBoosts: new Map<string, ActivateBoost>(),
   };
@@ -100,21 +101,42 @@ async function updateBadgeHoldings(
     (await ctx.store.get(BadgeHolder, address));
 
   if (!holder) {
-    holder = new BadgeHolder({ id: address, holdings: {} });
+    holder = new BadgeHolder({
+      id: address,
+      holdings: {},
+      totalAmount: BigInt(0),
+    });
   }
 
   const currentHoldings = holder.holdings || {};
-  currentHoldings[tokenId] = (
-    BigInt(currentHoldings[tokenId] || 0) + amount
-  ).toString();
+  const oldAmount = BigInt(currentHoldings[tokenId] || 0);
+  const newAmount = oldAmount + amount;
 
-  // Remove token from holdings if balance is 0
-  if (currentHoldings[tokenId] === "0") {
+  if (newAmount === BigInt(0)) {
     delete currentHoldings[tokenId];
+  } else {
+    currentHoldings[tokenId] = newAmount.toString();
   }
+
+  // Update totalAmount
+  holder.totalAmount = (holder.totalAmount || BigInt(0)) + amount;
 
   holder.holdings = currentHoldings;
   entities.badgeHolders.set(address, holder);
+
+  // Create or update BadgeAmount entity
+  const badgeAmountId = `${address}-${tokenId}`;
+  let badgeAmount = entities.badgeAmounts.get(badgeAmountId);
+  if (!badgeAmount) {
+    badgeAmount = new BadgeAmount({
+      id: badgeAmountId,
+      badgeId: tokenId,
+      amount: BigInt(0),
+      holder: holder,
+    });
+  }
+  badgeAmount.amount = newAmount;
+  entities.badgeAmounts.set(badgeAmountId, badgeAmount);
 }
 
 async function processQueueBoost(
@@ -159,6 +181,7 @@ async function processActivateBoost(
 
 async function saveEntities(ctx: any, entities: any) {
   await ctx.store.upsert(Array.from(entities.badgeHolders.values()));
+  await ctx.store.upsert(Array.from(entities.badgeAmounts.values()));
   await ctx.store.upsert(Array.from(entities.queueBoosts.values()));
   await ctx.store.upsert(Array.from(entities.activateBoosts.values()));
 }
