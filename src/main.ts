@@ -1,8 +1,15 @@
 import { Log } from "@subsquid/evm-processor";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
+import * as beranameAbi from "./abi/beranameRegistry";
 import * as bgtAbi from "./abi/bgt";
-import { ActivateBoost, BadgeAmount, BadgeHolder, QueueBoost } from "./model";
+import {
+  ActivateBoost,
+  BadgeAmount,
+  BadgeHolder,
+  Beraname,
+  QueueBoost,
+} from "./model";
 import { processor } from "./processor";
 
 processor.run(new TypeormDatabase(), async (ctx) => {
@@ -11,6 +18,7 @@ processor.run(new TypeormDatabase(), async (ctx) => {
     badgeAmounts: new Map<string, BadgeAmount>(),
     queueBoosts: new Map<string, QueueBoost>(),
     activateBoosts: new Map<string, ActivateBoost>(),
+    beranames: new Map<string, Beraname>(),
   };
 
   for (const block of ctx.blocks) {
@@ -31,6 +39,10 @@ async function processLog(log: any, ctx: any, entities: any, header: any) {
     await processQueueBoost(log, ctx, entities, header);
   } else if (bgtAbi.events.ActivateBoost.is(log)) {
     await processActivateBoost(log, ctx, entities, header);
+  } else if (beranameAbi.events.Mint.is(log)) {
+    await processBeranameMint(log, ctx, entities);
+  } else if (beranameAbi.events.UpdateWhois.is(log)) {
+    await processBeranameUpdateWhois(log, ctx, entities);
   }
 }
 
@@ -179,9 +191,57 @@ async function processActivateBoost(
   entities.activateBoosts.set(id, activateBoost);
 }
 
+async function processBeranameMint(log: Log, ctx: any, entities: any) {
+  const { id, chars, to } = beranameAbi.events.Mint.decode(log);
+  const beranameId = id.toString();
+  const name = chars.join("");
+  const ownerAddress = to.toLowerCase();
+
+  // Get or create the BadgeHolder
+  let holder =
+    entities.badgeHolders.get(ownerAddress) ||
+    (await ctx.store.get(BadgeHolder, ownerAddress));
+  if (!holder) {
+    holder = new BadgeHolder({
+      id: ownerAddress,
+      holdings: {},
+      totalAmount: BigInt(0),
+    });
+    entities.badgeHolders.set(ownerAddress, holder);
+  }
+
+  let beraname = entities.beranames.get(beranameId);
+  if (!beraname) {
+    beraname = new Beraname({
+      id: beranameId,
+      name: name,
+      owner: holder, // Now we're assigning the BadgeHolder object
+      whois: ownerAddress,
+      expiry: BigInt(0), // We'll need to update this with the actual expiry
+      metadataURI: "",
+    });
+    entities.beranames.set(beranameId, beraname);
+  }
+}
+
+async function processBeranameUpdateWhois(log: Log, ctx: any, entities: any) {
+  const { id, aka } = beranameAbi.events.UpdateWhois.decode(log);
+  const beranameId = id.toString();
+  const newWhois = aka.toLowerCase();
+
+  let beraname =
+    entities.beranames.get(beranameId) ||
+    (await ctx.store.get(Beraname, beranameId));
+  if (beraname) {
+    beraname.whois = newWhois;
+    entities.beranames.set(beranameId, beraname);
+  }
+}
+
 async function saveEntities(ctx: any, entities: any) {
   await ctx.store.upsert(Array.from(entities.badgeHolders.values()));
   await ctx.store.upsert(Array.from(entities.badgeAmounts.values()));
   await ctx.store.upsert(Array.from(entities.queueBoosts.values()));
   await ctx.store.upsert(Array.from(entities.activateBoosts.values()));
+  await ctx.store.upsert(Array.from(entities.beranames.values()));
 }

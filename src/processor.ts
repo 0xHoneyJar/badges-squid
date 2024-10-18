@@ -8,8 +8,14 @@ import {
 } from "@subsquid/evm-processor";
 import { assertNotNull } from "@subsquid/util-internal";
 import * as badgesAbi from "./abi/badges";
+import * as beranameAbi from "./abi/beranameRegistry";
 import * as bgtAbi from "./abi/bgt";
-import { BGT_ADDRESS, CUB_ADDRESS, THJ_VALIDATOR_ADDRESS } from "./addresses";
+import {
+  BERA_NAME_REGISTRY_ADDRESS,
+  BGT_ADDRESS,
+  CUB_ADDRESS,
+  THJ_VALIDATOR_ADDRESS,
+} from "./addresses";
 
 export const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/berachain-bartio")
@@ -32,6 +38,13 @@ export const processor = new EvmBatchProcessor()
     topic0: [bgtAbi.events.QueueBoost.topic, bgtAbi.events.ActivateBoost.topic],
     topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
     transaction: true,
+  })
+  .addLog({
+    address: [BERA_NAME_REGISTRY_ADDRESS],
+    topic0: [
+      beranameAbi.events.UpdateWhois.topic,
+      beranameAbi.events.Mint.topic,
+    ],
   });
 
 function formatAddressTopic(address: string): string {

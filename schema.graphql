@@ -3,6 +3,7 @@ type BadgeHolder @entity {
   holdings: JSON!
   badgesHeld: [BadgeAmount!]! @derivedFrom(field: "holder")
   totalAmount: BigInt!
+  beranames: [Beraname!]! @derivedFrom(field: "owner")
 }
 
 type BadgeAmount @entity {
@@ -26,4 +27,13 @@ type ActivateBoost @entity {
   validator: String!
   amount: BigInt!
   timestamp: BigInt!
+}
+
+type Beraname @entity {
+  id: ID!
+  name: String!
+  owner: BadgeHolder!
+  whois: String!
+  expiry: BigInt!
+  metadataURI: String!
 }
