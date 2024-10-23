@@ -29,6 +29,22 @@ type ActivateBoost @entity {
   timestamp: BigInt!
 }
 
+type CancelBoost @entity {
+  id: ID!
+  user: String!
+  validator: String!
+  amount: BigInt!
+  timestamp: BigInt!
+}
+
+type DropBoost @entity {
+  id: ID!
+  user: String!
+  validator: String!
+  amount: BigInt!
+  timestamp: BigInt!
+}
+
 type Beraname @entity {
   id: ID!
   name: String!
@@ -36,4 +52,21 @@ type Beraname @entity {
   whois: String!
   expiry: BigInt!
   metadataURI: String!
+}
+
+type Distribution @entity {
+  id: ID!
+  valCoinbase: String!
+  blockNumber: BigInt!
+  receiver: String!
+  amount: BigInt!
+  timestamp: BigInt!
+  rewards: [DistributionReward!]! @derivedFrom(field: "distribution")
+}
+
+type DistributionReward @entity {
+  id: ID!
+  distribution: Distribution!
+  token: String!
+  amount: BigInt!
 }
