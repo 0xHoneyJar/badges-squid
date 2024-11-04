@@ -10,11 +10,11 @@ if [ -z "$version" ]; then
 fi
 
 # Run the sqd tags add command
-sqd tags add prod -n quest-squid -s v$version
+sqd tags add prod -n internal-squid -s v$version
 
 # Check if the command was successful
 if [ $? -eq 0 ]; then
-    echo "Successfully added tag prod for quest-squid version v$version"
+    echo "Successfully added tag prod for internal-squid version v$version"
 else
     echo "Error: Failed to add tag"
     exit 1
