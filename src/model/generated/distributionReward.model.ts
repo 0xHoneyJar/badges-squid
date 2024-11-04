@@ -19,4 +19,7 @@ export class DistributionReward {
 
     @BigIntColumn_({nullable: false})
     amount!: bigint
+
+    @BigIntColumn_({nullable: false})
+    blockNumber!: bigint
 }

@@ -20,4 +20,7 @@ export class DropBoost {
 
     @BigIntColumn_({nullable: false})
     timestamp!: bigint
+
+    @BigIntColumn_({nullable: false})
+    blockNumber!: bigint
 }

@@ -19,6 +19,7 @@ type QueueBoost @entity {
   validator: String!
   amount: BigInt!
   timestamp: BigInt!
+  blockNumber: BigInt!
 }
 
 type ActivateBoost @entity {
@@ -27,6 +28,7 @@ type ActivateBoost @entity {
   validator: String!
   amount: BigInt!
   timestamp: BigInt!
+  blockNumber: BigInt!
 }
 
 type CancelBoost @entity {
@@ -35,6 +37,7 @@ type CancelBoost @entity {
   validator: String!
   amount: BigInt!
   timestamp: BigInt!
+  blockNumber: BigInt!
 }
 
 type DropBoost @entity {
@@ -43,6 +46,7 @@ type DropBoost @entity {
   validator: String!
   amount: BigInt!
   timestamp: BigInt!
+  blockNumber: BigInt!
 }
 
 type Beraname @entity {
@@ -69,4 +73,13 @@ type DistributionReward @entity {
   distribution: Distribution!
   token: String!
   amount: BigInt!
+  blockNumber: BigInt!
+}
+
+type Block @entity {
+  id: ID!
+  number: BigInt!
+  timestamp: BigInt!
+  hash: String!
+  parentHash: String!
 }

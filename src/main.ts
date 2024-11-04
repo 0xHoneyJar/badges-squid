@@ -15,6 +15,7 @@ import {
   DistributionReward,
   DropBoost,
   QueueBoost,
+  Block,
 } from "./model";
 import { processor } from "./processor";
 
@@ -34,9 +35,20 @@ processor.run(new TypeormDatabase(), async (ctx) => {
     beranames: new Map<string, Beraname>(),
     distributions: new Map<string, Distribution>(),
     distributionRewards: new Map<string, DistributionReward>(),
+    blocks: new Map<string, Block>(),
   };
 
   for (const block of ctx.blocks) {
+    // Create Block entity for each block
+    const blockEntity = new Block({
+      id: block.header.hash,
+      number: BigInt(block.header.height),
+      timestamp: BigInt(Math.floor(block.header.timestamp / 1000)), // Convert to unix timestamp
+      hash: block.header.hash,
+      parentHash: block.header.parentHash,
+    });
+    entities.blocks.set(block.header.hash, blockEntity);
+
     for (const log of block.logs) {
       await processLog(log, ctx, entities, block.header);
     }
@@ -189,7 +201,8 @@ async function processQueueBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.queueBoosts.set(id, queueBoost);
@@ -209,7 +222,8 @@ async function processActivateBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.activateBoosts.set(id, activateBoost);
@@ -276,7 +290,8 @@ async function processCancelBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.cancelBoosts.set(id, cancelBoost);
@@ -296,7 +311,8 @@ async function processDropBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.dropBoosts.set(id, dropBoost);
@@ -312,7 +328,6 @@ async function processDistribution(
     distributorAbi.events.Distributed.decode(log);
   const id = `${log.transaction?.hash}-${log.logIndex}`;
 
-  // Create Distribution entity
   const distribution = new Distribution({
     id,
     valCoinbase: valCoinbase.toLowerCase(),
@@ -322,18 +337,14 @@ async function processDistribution(
     timestamp: BigInt(Math.floor(header.timestamp / 1000)),
   });
 
-  // Find all ERC20 Transfer events in the same transaction
   if (log.transaction) {
     const transferLogs = log.transaction.logs.filter((txLog) =>
       erc20Abi.events.Transfer.is(txLog)
     );
 
-    console.log(transferLogs);
-
     for (const transferLog of transferLogs) {
       const { from, to, value } = erc20Abi.events.Transfer.decode(transferLog);
 
-      // Only process transfers to the coinbase address
       if (to.toLowerCase() === COINBASE_ADDRESS) {
         const rewardId = `${id}-${transferLog.logIndex}`;
         const token = transferLog.address.toLowerCase();
@@ -343,6 +354,7 @@ async function processDistribution(
           distribution,
           token,
           amount: BigInt(value),
+          blockNumber: BigInt(header.height),
         });
 
         entities.distributionRewards.set(rewardId, distributionReward);
@@ -363,4 +375,5 @@ async function saveEntities(ctx: any, entities: any) {
   await ctx.store.upsert(Array.from(entities.beranames.values()));
   await ctx.store.upsert(Array.from(entities.distributions.values()));
   await ctx.store.upsert(Array.from(entities.distributionRewards.values()));
+  await ctx.store.upsert(Array.from(entities.blocks.values()));
 }
