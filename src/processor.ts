@@ -10,10 +10,12 @@ import { assertNotNull } from "@subsquid/util-internal";
 import * as badgesAbi from "./abi/badges";
 import * as beranameAbi from "./abi/beranameRegistry";
 import * as bgtAbi from "./abi/bgt";
+import * as distributorAbi from "./abi/distributor";
 import {
   BERA_NAME_REGISTRY_ADDRESS,
   BGT_ADDRESS,
   CUB_ADDRESS,
+  DISTRIBUTOR_ADDRESS,
   THJ_VALIDATOR_ADDRESS,
 } from "./addresses";
 
@@ -35,19 +37,28 @@ export const processor = new EvmBatchProcessor()
   })
   .addLog({
     address: [BGT_ADDRESS],
-    topic0: [bgtAbi.events.QueueBoost.topic, bgtAbi.events.ActivateBoost.topic],
+    topic0: [
+      bgtAbi.events.QueueBoost.topic,
+      bgtAbi.events.ActivateBoost.topic,
+      bgtAbi.events.CancelBoost.topic,
+      bgtAbi.events.DropBoost.topic,
+    ],
     topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
     transaction: true,
   })
   .addLog({
+    address: [DISTRIBUTOR_ADDRESS],
+    topic0: [distributorAbi.events.Distributed.topic],
+    topic1: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
+    transactionLogs: true,
+    transaction: true,
+  })
+  .addLog({
     address: [BERA_NAME_REGISTRY_ADDRESS],
-    topic0: [
-      beranameAbi.events.UpdateWhois.topic,
-      beranameAbi.events.Mint.topic,
-    ],
+    topic0: [beranameAbi.events.NameRegistered.topic],
   });
 
-function formatAddressTopic(address: string): string {
+export function formatAddressTopic(address: string): string {
   return "0x" + address.replace("0x", "").padStart(64, "0").toLowerCase();
 }
 

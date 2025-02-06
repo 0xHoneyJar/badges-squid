@@ -2,8 +2,48 @@
   {
     "inputs": [
       {
-        "internalType": "contract IAddressesProvider",
-        "name": "addressesProvider_",
+        "internalType": "contract BaseRegistrar",
+        "name": "base_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPriceOracle",
+        "name": "prices_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IReverseRegistrar",
+        "name": "reverseRegistrar_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IWhitelistValidator",
+        "name": "whitelistValidator_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IReservedRegistry",
+        "name": "reservedRegistry_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner_",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "rootNode_",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "rootName_",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "paymentReceiver_",
         "type": "address"
       }
     ],
@@ -11,33 +51,225 @@
     "type": "constructor"
   },
   {
-    "inputs": [],
-    "name": "Exists",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "AddressEmptyCode",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "AddressInsufficientBalance",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "InsufficientBalance",
+    "name": "CantSetReverseRecordForOthers",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "DurationTooShort",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "LeaseTooShort",
+    "name": "FailedInnerCall",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "NoEntity",
+    "name": "FreeMintSignatureAlreadyUsed",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "Nope",
+    "name": "InsufficientValue",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPaymentReceiver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MintLimitForRoundReached",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "NameNotAvailable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NameNotReserved",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NameReserved",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotAuthorisedToMintReservedNames",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PublicSaleNotLive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ResolverRequiredWhenDataSupplied",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SignatureAlreadyUsed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferFailed",
     "type": "error"
   },
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "payee",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      }
+    ],
+    "name": "ETHPaymentProcessed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newLaunchTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "LaunchTimeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "expires",
+        "type": "uint256"
+      }
+    ],
+    "name": "NameRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
+      },
       {
         "indexed": true,
         "internalType": "address",
@@ -47,86 +279,42 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "approved",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "Approval",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "operator",
+        "name": "referral",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "approved",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "expires",
+        "type": "uint256"
       }
     ],
-    "name": "ApprovalForAll",
+    "name": "NameRegisteredWithReferral",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
       },
       {
         "indexed": false,
-        "internalType": "string[]",
-        "name": "chars",
-        "type": "string[]"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "expires",
+        "type": "uint256"
       }
     ],
-    "name": "Mint",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "previousOwner",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "OwnershipTransferStarted",
+    "name": "NameRenewed",
     "type": "event"
   },
   {
@@ -154,36 +342,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "account",
+        "name": "newPaymentReceiver",
         "type": "address"
       }
     ],
-    "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "Transfer",
+    "name": "PaymentReceiverUpdated",
     "type": "event"
   },
   {
@@ -192,122 +355,47 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "account",
+        "name": "newPrices",
         "type": "address"
       }
     ],
-    "name": "Unpaused",
+    "name": "PriceOracleUpdated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
         "indexed": false,
-        "internalType": "string",
-        "name": "metadataURI",
-        "type": "string"
+        "internalType": "address",
+        "name": "newReservedNameMinterAddress",
+        "type": "address"
       }
     ],
-    "name": "UpdateMetadataURI",
+    "name": "ReservedNamesMinterChanged",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
         "indexed": false,
         "internalType": "address",
-        "name": "aka",
+        "name": "newReverseRegistrar",
         "type": "address"
       }
     ],
-    "name": "UpdateWhois",
+    "name": "ReverseRegistrarUpdated",
     "type": "event"
   },
   {
     "inputs": [],
-    "name": "acceptOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "addressesProvider",
-    "outputs": [
-      {
-        "internalType": "contract IAddressesProvider",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "approve",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
+    "name": "MIN_NAME_LENGTH",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "name": "chars",
-    "outputs": [
-      {
-        "internalType": "string[]",
-        "name": "",
-        "type": "string[]"
       }
     ],
     "stateMutability": "view",
@@ -315,173 +403,68 @@
   },
   {
     "inputs": [],
-    "name": "fundsManager",
+    "name": "MIN_REGISTRATION_DURATION",
     "outputs": [
       {
-        "internalType": "contract IFundsManager",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "getApproved",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      }
-    ],
-    "name": "isApprovedForAll",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string[]",
-        "name": "_chars",
-        "type": "string[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "whois",
-        "type": "address"
-      },
       {
         "internalType": "string",
-        "name": "metadataURI",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      }
-    ],
-    "name": "mintNative",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string[][]",
-        "name": "singleEmojis",
-        "type": "string[][]"
-      }
-    ],
-    "name": "mintToAuctionHouse",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "minted",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "names",
-    "outputs": [
-      {
-        "internalType": "bytes32",
         "name": "name",
-        "type": "bytes32"
-      },
+        "type": "string"
+      }
+    ],
+    "name": "available",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "launchTime",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "expiry",
+        "name": "",
         "type": "uint256"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "address",
-        "name": "whois",
+        "name": "",
         "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "metadataURI",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "mintsCountByRoundByAddress",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -501,14 +484,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ownerOf",
+    "inputs": [],
+    "name": "paymentReceiver",
     "outputs": [
       {
         "internalType": "address",
@@ -521,33 +498,7 @@
   },
   {
     "inputs": [],
-    "name": "paused",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingOwner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceOracle",
+    "name": "prices",
     "outputs": [
       {
         "internalType": "contract IPriceOracle",
@@ -561,9 +512,82 @@
   {
     "inputs": [
       {
-        "internalType": "string[]",
-        "name": "_chars",
-        "type": "string[]"
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "recoverFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "duration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "resolver",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "data",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "reverseRecord",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct RegistrarController.RegisterRequest",
+        "name": "request",
+        "type": "tuple"
+      }
+    ],
+    "name": "register",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -571,7 +595,31 @@
         "type": "uint256"
       }
     ],
-    "name": "renewNative",
+    "name": "registerPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "renew",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -586,17 +634,34 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_whois",
-        "type": "address"
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
       }
     ],
-    "name": "reverseLookup",
+    "name": "rentPrice",
     "outputs": [
       {
-        "internalType": "string[][]",
-        "name": "",
-        "type": "string[][]"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "base",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "discount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IPriceOracle.Price",
+        "name": "price",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -605,104 +670,61 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "duration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "resolver",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "data",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "reverseRecord",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct RegistrarController.RegisterRequest",
+        "name": "request",
+        "type": "tuple"
       }
     ],
-    "name": "safeTransferFrom",
+    "name": "reservedRegister",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-    ],
-    "name": "safeTransferFrom",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "approved",
-        "type": "bool"
-      }
-    ],
-    "name": "setApprovalForAll",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "accounts",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "status",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelisted",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes4",
-        "name": "interfaceId",
-        "type": "bytes4"
-      }
-    ],
-    "name": "supportsInterface",
+    "inputs": [],
+    "name": "reservedRegistry",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "contract IReservedRegistry",
         "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -710,7 +732,20 @@
   },
   {
     "inputs": [],
-    "name": "symbol",
+    "name": "reverseRegistrar",
+    "outputs": [
+      {
+        "internalType": "contract IReverseRegistrar",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rootName",
     "outputs": [
       {
         "internalType": "string",
@@ -723,14 +758,39 @@
   },
   {
     "inputs": [],
-    "name": "togglePause",
+    "name": "rootNode",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "launchTime_",
+        "type": "uint256"
+      }
+    ],
+    "name": "setLaunchTime",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "toggleWhitelist",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "paymentReceiver_",
+        "type": "address"
+      }
+    ],
+    "name": "setPaymentReceiver",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -738,97 +798,38 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
+        "internalType": "contract IPriceOracle",
+        "name": "prices_",
+        "type": "address"
       }
     ],
-    "name": "tokenByIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "setPriceOracle",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "reservedNamesMinter_",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
       }
     ],
-    "name": "tokenOfOwnerByIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "setReservedNamesMinter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenURI",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
+        "internalType": "contract IReverseRegistrar",
+        "name": "reverse_",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
       }
     ],
-    "name": "transferFrom",
+    "name": "setReverseRegistrar",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -849,42 +850,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "metadataURI_",
-        "type": "string"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
-    "name": "updateMetadataURI",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_aka",
-        "type": "address"
-      }
-    ],
-    "name": "updateWhois",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "whitelistEnabled",
+    "name": "usedFreeMintsSignatures",
     "outputs": [
       {
         "internalType": "bool",
@@ -893,6 +864,191 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "usedSignatures",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "valid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "duration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "resolver",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "data",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "reverseRecord",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct RegistrarController.RegisterRequest",
+        "name": "request",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "whitelistFreeRegister",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "duration",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "resolver",
+                "type": "address"
+              },
+              {
+                "internalType": "bytes[]",
+                "name": "data",
+                "type": "bytes[]"
+              },
+              {
+                "internalType": "bool",
+                "name": "reverseRecord",
+                "type": "bool"
+              },
+              {
+                "internalType": "address",
+                "name": "referrer",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct RegistrarController.RegisterRequest",
+            "name": "registerRequest",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "round_id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "round_total_mint",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct RegistrarController.WhitelistRegisterRequest",
+        "name": "request",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "whitelistRegister",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "whitelistValidator",
+    "outputs": [
+      {
+        "internalType": "contract IWhitelistValidator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawETH",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

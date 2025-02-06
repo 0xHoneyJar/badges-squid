@@ -1,8 +1,8 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, BigIntColumn as BigIntColumn_} from "@subsquid/typeorm-store"
 
 @Entity_()
-export class QueueBoost {
-    constructor(props?: Partial<QueueBoost>) {
+export class DropBoost {
+    constructor(props?: Partial<DropBoost>) {
         Object.assign(this, props)
     }
 

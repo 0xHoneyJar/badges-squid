@@ -3,14 +3,26 @@ import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
 import * as beranameAbi from "./abi/beranameRegistry";
 import * as bgtAbi from "./abi/bgt";
+import * as distributorAbi from "./abi/distributor";
+import * as erc20Abi from "./abi/erc20";
 import {
   ActivateBoost,
   BadgeAmount,
   BadgeHolder,
   Beraname,
+  Block,
+  CancelBoost,
+  Distribution,
+  DistributionReward,
+  DropBoost,
   QueueBoost,
 } from "./model";
 import { processor } from "./processor";
+
+const COINBASE_ADDRESS =
+  "0x40495A781095932e2FC8dccA69F5e358711Fdd41".toLowerCase();
+const DISTRIBUTOR_ADDRESS =
+  "0x2C1F148Ee973a4cdA4aBEce2241DF3D3337b7319".toLowerCase();
 
 processor.run(new TypeormDatabase(), async (ctx) => {
   const entities = {
@@ -18,10 +30,25 @@ processor.run(new TypeormDatabase(), async (ctx) => {
     badgeAmounts: new Map<string, BadgeAmount>(),
     queueBoosts: new Map<string, QueueBoost>(),
     activateBoosts: new Map<string, ActivateBoost>(),
+    cancelBoosts: new Map<string, CancelBoost>(),
+    dropBoosts: new Map<string, DropBoost>(),
     beranames: new Map<string, Beraname>(),
+    distributions: new Map<string, Distribution>(),
+    distributionRewards: new Map<string, DistributionReward>(),
+    blocks: new Map<string, Block>(),
   };
 
   for (const block of ctx.blocks) {
+    // Create Block entity for each block
+    const blockEntity = new Block({
+      id: block.header.hash,
+      number: BigInt(block.header.height),
+      timestamp: BigInt(Math.floor(block.header.timestamp / 1000)), // Convert to unix timestamp
+      hash: block.header.hash,
+      parentHash: block.header.parentHash,
+    });
+    entities.blocks.set(block.header.hash, blockEntity);
+
     for (const log of block.logs) {
       await processLog(log, ctx, entities, block.header);
     }
@@ -39,10 +66,17 @@ async function processLog(log: any, ctx: any, entities: any, header: any) {
     await processQueueBoost(log, ctx, entities, header);
   } else if (bgtAbi.events.ActivateBoost.is(log)) {
     await processActivateBoost(log, ctx, entities, header);
-  } else if (beranameAbi.events.Mint.is(log)) {
-    await processBeranameMint(log, ctx, entities);
-  } else if (beranameAbi.events.UpdateWhois.is(log)) {
-    await processBeranameUpdateWhois(log, ctx, entities);
+  } else if (bgtAbi.events.CancelBoost.is(log)) {
+    await processCancelBoost(log, ctx, entities, header);
+  } else if (bgtAbi.events.DropBoost.is(log)) {
+    await processDropBoost(log, ctx, entities, header);
+  } else if (beranameAbi.events.NameRegistered.is(log)) {
+    await processBeranameNameRegistered(log, ctx, entities);
+  } else if (
+    log.address === DISTRIBUTOR_ADDRESS &&
+    distributorAbi.events.Distributed.is(log)
+  ) {
+    await processDistribution(log, ctx, entities, header);
   }
 }
 
@@ -165,7 +199,8 @@ async function processQueueBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.queueBoosts.set(id, queueBoost);
@@ -185,17 +220,22 @@ async function processActivateBoost(
     user: sender.toLowerCase(),
     validator: validator.toLowerCase(),
     amount: BigInt(amount),
-    timestamp: BigInt(Math.floor(header.timestamp / 1000)), // Convert to unix timestamp
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
   });
 
   entities.activateBoosts.set(id, activateBoost);
 }
 
-async function processBeranameMint(log: Log, ctx: any, entities: any) {
-  const { id, chars, to } = beranameAbi.events.Mint.decode(log);
-  const beranameId = id.toString();
-  const name = chars.join("");
-  const ownerAddress = to.toLowerCase();
+async function processBeranameNameRegistered(
+  log: Log,
+  ctx: any,
+  entities: any
+) {
+  const { name, label, owner, expires } =
+    beranameAbi.events.NameRegistered.decode(log);
+  const beranameId = label.toString();
+  const ownerAddress = owner.toLowerCase();
 
   // Get or create the BadgeHolder
   let holder =
@@ -224,18 +264,93 @@ async function processBeranameMint(log: Log, ctx: any, entities: any) {
   }
 }
 
-async function processBeranameUpdateWhois(log: Log, ctx: any, entities: any) {
-  const { id, aka } = beranameAbi.events.UpdateWhois.decode(log);
-  const beranameId = id.toString();
-  const newWhois = aka.toLowerCase();
+async function processCancelBoost(
+  log: Log,
+  ctx: any,
+  entities: any,
+  header: any
+) {
+  const { sender, validator, amount } = bgtAbi.events.CancelBoost.decode(log);
+  const id = `${log.transaction?.hash}-${log.logIndex}`;
 
-  let beraname =
-    entities.beranames.get(beranameId) ||
-    (await ctx.store.get(Beraname, beranameId));
-  if (beraname) {
-    beraname.whois = newWhois;
-    entities.beranames.set(beranameId, beraname);
+  const cancelBoost = new CancelBoost({
+    id,
+    user: sender.toLowerCase(),
+    validator: validator.toLowerCase(),
+    amount: BigInt(amount),
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
+  });
+
+  entities.cancelBoosts.set(id, cancelBoost);
+}
+
+async function processDropBoost(
+  log: Log,
+  ctx: any,
+  entities: any,
+  header: any
+) {
+  const { sender, validator, amount } = bgtAbi.events.DropBoost.decode(log);
+  const id = `${log.transaction?.hash}-${log.logIndex}`;
+
+  const dropBoost = new DropBoost({
+    id,
+    user: sender.toLowerCase(),
+    validator: validator.toLowerCase(),
+    amount: BigInt(amount),
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+    blockNumber: BigInt(header.height),
+  });
+
+  entities.dropBoosts.set(id, dropBoost);
+}
+
+async function processDistribution(
+  log: Log,
+  ctx: any,
+  entities: any,
+  header: any
+) {
+  const { valCoinbase, blockNumber, receiver, amount } =
+    distributorAbi.events.Distributed.decode(log);
+  const id = `${log.transaction?.hash}-${log.logIndex}`;
+
+  const distribution = new Distribution({
+    id,
+    valCoinbase: valCoinbase.toLowerCase(),
+    blockNumber: BigInt(blockNumber),
+    receiver: receiver.toLowerCase(),
+    amount: BigInt(amount),
+    timestamp: BigInt(Math.floor(header.timestamp / 1000)),
+  });
+
+  if (log.transaction) {
+    const transferLogs = log.transaction.logs.filter((txLog) =>
+      erc20Abi.events.Transfer.is(txLog)
+    );
+
+    for (const transferLog of transferLogs) {
+      const { from, to, value } = erc20Abi.events.Transfer.decode(transferLog);
+
+      if (to.toLowerCase() === COINBASE_ADDRESS) {
+        const rewardId = `${id}-${transferLog.logIndex}`;
+        const token = transferLog.address.toLowerCase();
+
+        const distributionReward = new DistributionReward({
+          id: rewardId,
+          distribution,
+          token,
+          amount: BigInt(value),
+          blockNumber: BigInt(header.height),
+        });
+
+        entities.distributionRewards.set(rewardId, distributionReward);
+      }
+    }
   }
+
+  entities.distributions.set(id, distribution);
 }
 
 async function saveEntities(ctx: any, entities: any) {
@@ -243,5 +358,10 @@ async function saveEntities(ctx: any, entities: any) {
   await ctx.store.upsert(Array.from(entities.badgeAmounts.values()));
   await ctx.store.upsert(Array.from(entities.queueBoosts.values()));
   await ctx.store.upsert(Array.from(entities.activateBoosts.values()));
+  await ctx.store.upsert(Array.from(entities.cancelBoosts.values()));
+  await ctx.store.upsert(Array.from(entities.dropBoosts.values()));
   await ctx.store.upsert(Array.from(entities.beranames.values()));
+  await ctx.store.upsert(Array.from(entities.distributions.values()));
+  await ctx.store.upsert(Array.from(entities.distributionRewards.values()));
+  await ctx.store.upsert(Array.from(entities.blocks.values()));
 }

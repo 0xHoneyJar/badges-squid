@@ -3,274 +3,234 @@ import { event, fun, viewFun, indexed, ContractBase } from '@subsquid/evm-abi'
 import type { EventParams as EParams, FunctionArguments, FunctionReturn } from '@subsquid/evm-abi'
 
 export const events = {
-    Approval: event("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925", "Approval(address,address,uint256)", {"owner": indexed(p.address), "approved": indexed(p.address), "tokenId": indexed(p.uint256)}),
-    ApprovalForAll: event("0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31", "ApprovalForAll(address,address,bool)", {"owner": indexed(p.address), "operator": indexed(p.address), "approved": p.bool}),
-    Mint: event("0xc368b9d544dedfe16e4ac071dcfbafe213adfe63bbc35e0fd438a2e815e98a44", "Mint(uint256,string[],address)", {"id": indexed(p.uint256), "chars": p.array(p.string), "to": indexed(p.address)}),
-    OwnershipTransferStarted: event("0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700", "OwnershipTransferStarted(address,address)", {"previousOwner": indexed(p.address), "newOwner": indexed(p.address)}),
+    ETHPaymentProcessed: event("0xbc769889246686134856b409155bb87630ea5797a705fa98b61f576d316aab9b", "ETHPaymentProcessed(address,uint256)", {"payee": indexed(p.address), "price": p.uint256}),
+    LaunchTimeUpdated: event("0xdb5fc205901030b15dae0c28aeedbdf381585f7e12f86855899a3b5328aa34e9", "LaunchTimeUpdated(uint256)", {"newLaunchTime": p.uint256}),
+    NameRegistered: event("0x0667086d08417333ce63f40d5bc2ef6fd330e25aaaf317b7c489541f8fe600fa", "NameRegistered(string,bytes32,address,uint256)", {"name": p.string, "label": indexed(p.bytes32), "owner": indexed(p.address), "expires": p.uint256}),
+    NameRegisteredWithReferral: event("0x1124fcbf46055234a873086b844a44635d54b982d7b4ca7e1631d51a7950e665", "NameRegisteredWithReferral(string,bytes32,address,address,uint256)", {"name": p.string, "label": indexed(p.bytes32), "owner": indexed(p.address), "referral": indexed(p.address), "expires": p.uint256}),
+    NameRenewed: event("0x93bc1a84707231b1d9552157299797c64a1a8c5bc79f05153716630c9c4936fc", "NameRenewed(string,bytes32,uint256)", {"name": p.string, "label": indexed(p.bytes32), "expires": p.uint256}),
     OwnershipTransferred: event("0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0", "OwnershipTransferred(address,address)", {"previousOwner": indexed(p.address), "newOwner": indexed(p.address)}),
-    Paused: event("0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258", "Paused(address)", {"account": p.address}),
-    Transfer: event("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "Transfer(address,address,uint256)", {"from": indexed(p.address), "to": indexed(p.address), "tokenId": indexed(p.uint256)}),
-    Unpaused: event("0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa", "Unpaused(address)", {"account": p.address}),
-    UpdateMetadataURI: event("0x33c1916d3d29d9f70e7bf4aa4b1dfa0de3098565002f9222104eb9334d4630f0", "UpdateMetadataURI(uint256,string)", {"id": indexed(p.uint256), "metadataURI": p.string}),
-    UpdateWhois: event("0xbe77a8b115a254f1e1b86f792116c500e0e5114ac88c1f43bd1c4deb427328cf", "UpdateWhois(uint256,address)", {"id": indexed(p.uint256), "aka": p.address}),
+    PaymentReceiverUpdated: event("0x6cfddd24d2afc1b9f31d51f0ef77029fdde044799f0a87a2a09b7673b6097422", "PaymentReceiverUpdated(address)", {"newPaymentReceiver": p.address}),
+    PriceOracleUpdated: event("0xefe8ab924ca486283a79dc604baa67add51afb82af1db8ac386ebbba643cdffd", "PriceOracleUpdated(address)", {"newPrices": p.address}),
+    ReservedNamesMinterChanged: event("0x1c8833ad9579b88233573f0b91eb8ab86e24450f9e11151c6387dff4d5b4f61a", "ReservedNamesMinterChanged(address)", {"newReservedNameMinterAddress": p.address}),
+    ReverseRegistrarUpdated: event("0xd192c0b229b00473ccb6ccfebf6642805bca1dcdf2d9fb4fd102c7dc7ea4ce23", "ReverseRegistrarUpdated(address)", {"newReverseRegistrar": p.address}),
 }
 
 export const functions = {
-    acceptOwnership: fun("0x79ba5097", "acceptOwnership()", {}, ),
-    addressesProvider: viewFun("0xc72c4d10", "addressesProvider()", {}, p.address),
-    approve: fun("0x095ea7b3", "approve(address,uint256)", {"to": p.address, "tokenId": p.uint256}, ),
-    balanceOf: viewFun("0x70a08231", "balanceOf(address)", {"owner": p.address}, p.uint256),
-    chars: viewFun("0xea372097", "chars(uint256)", {"id": p.uint256}, p.array(p.string)),
-    fundsManager: viewFun("0x0d116652", "fundsManager()", {}, p.address),
-    getApproved: viewFun("0x081812fc", "getApproved(uint256)", {"tokenId": p.uint256}, p.address),
-    isApprovedForAll: viewFun("0xe985e9c5", "isApprovedForAll(address,address)", {"owner": p.address, "operator": p.address}, p.bool),
-    mintNative: fun("0x3d30c7f6", "mintNative(string[],uint256,address,string,address)", {"_chars": p.array(p.string), "duration": p.uint256, "whois": p.address, "metadataURI": p.string, "to": p.address}, p.uint256),
-    mintToAuctionHouse: fun("0x7b850843", "mintToAuctionHouse(string[][])", {"singleEmojis": p.array(p.array(p.string))}, ),
-    minted: viewFun("0x8ccc5f80", "minted(bytes32)", {"_0": p.bytes32}, p.bool),
-    name: viewFun("0x06fdde03", "name()", {}, p.string),
-    names: viewFun("0x4622ab03", "names(uint256)", {"_0": p.uint256}, {"name": p.bytes32, "expiry": p.uint256, "whois": p.address, "metadataURI": p.string}),
+    MIN_NAME_LENGTH: viewFun("0x50cfeddd", "MIN_NAME_LENGTH()", {}, p.uint256),
+    MIN_REGISTRATION_DURATION: viewFun("0x8a95b09f", "MIN_REGISTRATION_DURATION()", {}, p.uint256),
+    available: viewFun("0xaeb8ce9b", "available(string)", {"name": p.string}, p.bool),
+    launchTime: viewFun("0x790ca413", "launchTime()", {}, p.uint256),
+    mintsCountByRoundByAddress: viewFun("0x501b3fd7", "mintsCountByRoundByAddress(address,uint256)", {"_0": p.address, "_1": p.uint256}, p.uint256),
     owner: viewFun("0x8da5cb5b", "owner()", {}, p.address),
-    ownerOf: viewFun("0x6352211e", "ownerOf(uint256)", {"tokenId": p.uint256}, p.address),
-    paused: viewFun("0x5c975abb", "paused()", {}, p.bool),
-    pendingOwner: viewFun("0xe30c3978", "pendingOwner()", {}, p.address),
-    priceOracle: viewFun("0x2630c12f", "priceOracle()", {}, p.address),
-    renewNative: fun("0xe7962bb3", "renewNative(string[],uint256)", {"_chars": p.array(p.string), "duration": p.uint256}, ),
+    paymentReceiver: viewFun("0xcb37f3b2", "paymentReceiver()", {}, p.address),
+    prices: viewFun("0xd3419bf3", "prices()", {}, p.address),
+    recoverFunds: fun("0x5d3590d5", "recoverFunds(address,address,uint256)", {"_token": p.address, "_to": p.address, "_amount": p.uint256}, ),
+    register: fun("0xeeb144da", "register((string,address,uint256,address,bytes[],bool,address))", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address})}, ),
+    registerPrice: viewFun("0xe72c1e55", "registerPrice(string,uint256)", {"name": p.string, "duration": p.uint256}, p.uint256),
+    renew: fun("0xacf1a841", "renew(string,uint256)", {"name": p.string, "duration": p.uint256}, ),
     renounceOwnership: fun("0x715018a6", "renounceOwnership()", {}, ),
-    reverseLookup: viewFun("0x09f81a6f", "reverseLookup(address)", {"_whois": p.address}, p.array(p.array(p.string))),
-    'safeTransferFrom(address,address,uint256)': fun("0x42842e0e", "safeTransferFrom(address,address,uint256)", {"from": p.address, "to": p.address, "tokenId": p.uint256}, ),
-    'safeTransferFrom(address,address,uint256,bytes)': fun("0xb88d4fde", "safeTransferFrom(address,address,uint256,bytes)", {"from": p.address, "to": p.address, "tokenId": p.uint256, "data": p.bytes}, ),
-    setApprovalForAll: fun("0xa22cb465", "setApprovalForAll(address,bool)", {"operator": p.address, "approved": p.bool}, ),
-    setWhitelisted: fun("0xf3c4b704", "setWhitelisted(address[],bool)", {"accounts": p.array(p.address), "status": p.bool}, ),
-    supportsInterface: viewFun("0x01ffc9a7", "supportsInterface(bytes4)", {"interfaceId": p.bytes4}, p.bool),
-    symbol: viewFun("0x95d89b41", "symbol()", {}, p.string),
-    togglePause: fun("0xc4ae3168", "togglePause()", {}, ),
-    toggleWhitelist: fun("0x7e15144b", "toggleWhitelist()", {}, ),
-    tokenByIndex: viewFun("0x4f6ccce7", "tokenByIndex(uint256)", {"index": p.uint256}, p.uint256),
-    tokenOfOwnerByIndex: viewFun("0x2f745c59", "tokenOfOwnerByIndex(address,uint256)", {"owner": p.address, "index": p.uint256}, p.uint256),
-    tokenURI: viewFun("0xc87b56dd", "tokenURI(uint256)", {"id": p.uint256}, p.string),
-    totalSupply: viewFun("0x18160ddd", "totalSupply()", {}, p.uint256),
-    transferFrom: fun("0x23b872dd", "transferFrom(address,address,uint256)", {"from": p.address, "to": p.address, "tokenId": p.uint256}, ),
+    rentPrice: viewFun("0x83e7f6ff", "rentPrice(string,uint256)", {"name": p.string, "duration": p.uint256}, p.struct({"base": p.uint256, "discount": p.uint256})),
+    reservedRegister: fun("0xdc7daea3", "reservedRegister((string,address,uint256,address,bytes[],bool,address))", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address})}, ),
+    reservedRegistry: viewFun("0xd2ff3bdc", "reservedRegistry()", {}, p.address),
+    reverseRegistrar: viewFun("0x80869853", "reverseRegistrar()", {}, p.address),
+    rootName: viewFun("0xf20387df", "rootName()", {}, p.string),
+    rootNode: viewFun("0xfaff50a8", "rootNode()", {}, p.bytes32),
+    setLaunchTime: fun("0x9ff46e74", "setLaunchTime(uint256)", {"launchTime_": p.uint256}, ),
+    setPaymentReceiver: fun("0x65ebf99a", "setPaymentReceiver(address)", {"paymentReceiver_": p.address}, ),
+    setPriceOracle: fun("0x530e784f", "setPriceOracle(address)", {"prices_": p.address}, ),
+    setReservedNamesMinter: fun("0x5829831d", "setReservedNamesMinter(address)", {"reservedNamesMinter_": p.address}, ),
+    setReverseRegistrar: fun("0x557499ba", "setReverseRegistrar(address)", {"reverse_": p.address}, ),
     transferOwnership: fun("0xf2fde38b", "transferOwnership(address)", {"newOwner": p.address}, ),
-    updateMetadataURI: fun("0x8fe86b3f", "updateMetadataURI(uint256,string)", {"id": p.uint256, "metadataURI_": p.string}, ),
-    updateWhois: fun("0xbfb14ca7", "updateWhois(uint256,address)", {"id": p.uint256, "_aka": p.address}, ),
-    whitelistEnabled: viewFun("0x51fb012d", "whitelistEnabled()", {}, p.bool),
+    usedFreeMintsSignatures: viewFun("0x54826fe7", "usedFreeMintsSignatures(bytes32)", {"_0": p.bytes32}, p.bool),
+    usedSignatures: viewFun("0xf978fd61", "usedSignatures(bytes32)", {"_0": p.bytes32}, p.bool),
+    valid: viewFun("0x9791c097", "valid(string)", {"name": p.string}, p.bool),
+    whitelistFreeRegister: fun("0xd57a11f1", "whitelistFreeRegister((string,address,uint256,address,bytes[],bool,address),bytes)", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address}), "signature": p.bytes}, ),
+    whitelistRegister: fun("0xb36c3be8", "whitelistRegister(((string,address,uint256,address,bytes[],bool,address),uint256,uint256),bytes)", {"request": p.struct({"registerRequest": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address}), "round_id": p.uint256, "round_total_mint": p.uint256}), "signature": p.bytes}, ),
+    whitelistValidator: viewFun("0xb9b6caed", "whitelistValidator()", {}, p.address),
+    withdrawETH: fun("0xe086e5ec", "withdrawETH()", {}, ),
 }
 
 export class Contract extends ContractBase {
 
-    addressesProvider() {
-        return this.eth_call(functions.addressesProvider, {})
+    MIN_NAME_LENGTH() {
+        return this.eth_call(functions.MIN_NAME_LENGTH, {})
     }
 
-    balanceOf(owner: BalanceOfParams["owner"]) {
-        return this.eth_call(functions.balanceOf, {owner})
+    MIN_REGISTRATION_DURATION() {
+        return this.eth_call(functions.MIN_REGISTRATION_DURATION, {})
     }
 
-    chars(id: CharsParams["id"]) {
-        return this.eth_call(functions.chars, {id})
+    available(name: AvailableParams["name"]) {
+        return this.eth_call(functions.available, {name})
     }
 
-    fundsManager() {
-        return this.eth_call(functions.fundsManager, {})
+    launchTime() {
+        return this.eth_call(functions.launchTime, {})
     }
 
-    getApproved(tokenId: GetApprovedParams["tokenId"]) {
-        return this.eth_call(functions.getApproved, {tokenId})
-    }
-
-    isApprovedForAll(owner: IsApprovedForAllParams["owner"], operator: IsApprovedForAllParams["operator"]) {
-        return this.eth_call(functions.isApprovedForAll, {owner, operator})
-    }
-
-    minted(_0: MintedParams["_0"]) {
-        return this.eth_call(functions.minted, {_0})
-    }
-
-    name() {
-        return this.eth_call(functions.name, {})
-    }
-
-    names(_0: NamesParams["_0"]) {
-        return this.eth_call(functions.names, {_0})
+    mintsCountByRoundByAddress(_0: MintsCountByRoundByAddressParams["_0"], _1: MintsCountByRoundByAddressParams["_1"]) {
+        return this.eth_call(functions.mintsCountByRoundByAddress, {_0, _1})
     }
 
     owner() {
         return this.eth_call(functions.owner, {})
     }
 
-    ownerOf(tokenId: OwnerOfParams["tokenId"]) {
-        return this.eth_call(functions.ownerOf, {tokenId})
+    paymentReceiver() {
+        return this.eth_call(functions.paymentReceiver, {})
     }
 
-    paused() {
-        return this.eth_call(functions.paused, {})
+    prices() {
+        return this.eth_call(functions.prices, {})
     }
 
-    pendingOwner() {
-        return this.eth_call(functions.pendingOwner, {})
+    registerPrice(name: RegisterPriceParams["name"], duration: RegisterPriceParams["duration"]) {
+        return this.eth_call(functions.registerPrice, {name, duration})
     }
 
-    priceOracle() {
-        return this.eth_call(functions.priceOracle, {})
+    rentPrice(name: RentPriceParams["name"], duration: RentPriceParams["duration"]) {
+        return this.eth_call(functions.rentPrice, {name, duration})
     }
 
-    reverseLookup(_whois: ReverseLookupParams["_whois"]) {
-        return this.eth_call(functions.reverseLookup, {_whois})
+    reservedRegistry() {
+        return this.eth_call(functions.reservedRegistry, {})
     }
 
-    supportsInterface(interfaceId: SupportsInterfaceParams["interfaceId"]) {
-        return this.eth_call(functions.supportsInterface, {interfaceId})
+    reverseRegistrar() {
+        return this.eth_call(functions.reverseRegistrar, {})
     }
 
-    symbol() {
-        return this.eth_call(functions.symbol, {})
+    rootName() {
+        return this.eth_call(functions.rootName, {})
     }
 
-    tokenByIndex(index: TokenByIndexParams["index"]) {
-        return this.eth_call(functions.tokenByIndex, {index})
+    rootNode() {
+        return this.eth_call(functions.rootNode, {})
     }
 
-    tokenOfOwnerByIndex(owner: TokenOfOwnerByIndexParams["owner"], index: TokenOfOwnerByIndexParams["index"]) {
-        return this.eth_call(functions.tokenOfOwnerByIndex, {owner, index})
+    usedFreeMintsSignatures(_0: UsedFreeMintsSignaturesParams["_0"]) {
+        return this.eth_call(functions.usedFreeMintsSignatures, {_0})
     }
 
-    tokenURI(id: TokenURIParams["id"]) {
-        return this.eth_call(functions.tokenURI, {id})
+    usedSignatures(_0: UsedSignaturesParams["_0"]) {
+        return this.eth_call(functions.usedSignatures, {_0})
     }
 
-    totalSupply() {
-        return this.eth_call(functions.totalSupply, {})
+    valid(name: ValidParams["name"]) {
+        return this.eth_call(functions.valid, {name})
     }
 
-    whitelistEnabled() {
-        return this.eth_call(functions.whitelistEnabled, {})
+    whitelistValidator() {
+        return this.eth_call(functions.whitelistValidator, {})
     }
 }
 
 /// Event types
-export type ApprovalEventArgs = EParams<typeof events.Approval>
-export type ApprovalForAllEventArgs = EParams<typeof events.ApprovalForAll>
-export type MintEventArgs = EParams<typeof events.Mint>
-export type OwnershipTransferStartedEventArgs = EParams<typeof events.OwnershipTransferStarted>
+export type ETHPaymentProcessedEventArgs = EParams<typeof events.ETHPaymentProcessed>
+export type LaunchTimeUpdatedEventArgs = EParams<typeof events.LaunchTimeUpdated>
+export type NameRegisteredEventArgs = EParams<typeof events.NameRegistered>
+export type NameRegisteredWithReferralEventArgs = EParams<typeof events.NameRegisteredWithReferral>
+export type NameRenewedEventArgs = EParams<typeof events.NameRenewed>
 export type OwnershipTransferredEventArgs = EParams<typeof events.OwnershipTransferred>
-export type PausedEventArgs = EParams<typeof events.Paused>
-export type TransferEventArgs = EParams<typeof events.Transfer>
-export type UnpausedEventArgs = EParams<typeof events.Unpaused>
-export type UpdateMetadataURIEventArgs = EParams<typeof events.UpdateMetadataURI>
-export type UpdateWhoisEventArgs = EParams<typeof events.UpdateWhois>
+export type PaymentReceiverUpdatedEventArgs = EParams<typeof events.PaymentReceiverUpdated>
+export type PriceOracleUpdatedEventArgs = EParams<typeof events.PriceOracleUpdated>
+export type ReservedNamesMinterChangedEventArgs = EParams<typeof events.ReservedNamesMinterChanged>
+export type ReverseRegistrarUpdatedEventArgs = EParams<typeof events.ReverseRegistrarUpdated>
 
 /// Function types
-export type AcceptOwnershipParams = FunctionArguments<typeof functions.acceptOwnership>
-export type AcceptOwnershipReturn = FunctionReturn<typeof functions.acceptOwnership>
+export type MIN_NAME_LENGTHParams = FunctionArguments<typeof functions.MIN_NAME_LENGTH>
+export type MIN_NAME_LENGTHReturn = FunctionReturn<typeof functions.MIN_NAME_LENGTH>
 
-export type AddressesProviderParams = FunctionArguments<typeof functions.addressesProvider>
-export type AddressesProviderReturn = FunctionReturn<typeof functions.addressesProvider>
+export type MIN_REGISTRATION_DURATIONParams = FunctionArguments<typeof functions.MIN_REGISTRATION_DURATION>
+export type MIN_REGISTRATION_DURATIONReturn = FunctionReturn<typeof functions.MIN_REGISTRATION_DURATION>
 
-export type ApproveParams = FunctionArguments<typeof functions.approve>
-export type ApproveReturn = FunctionReturn<typeof functions.approve>
+export type AvailableParams = FunctionArguments<typeof functions.available>
+export type AvailableReturn = FunctionReturn<typeof functions.available>
 
-export type BalanceOfParams = FunctionArguments<typeof functions.balanceOf>
-export type BalanceOfReturn = FunctionReturn<typeof functions.balanceOf>
+export type LaunchTimeParams = FunctionArguments<typeof functions.launchTime>
+export type LaunchTimeReturn = FunctionReturn<typeof functions.launchTime>
 
-export type CharsParams = FunctionArguments<typeof functions.chars>
-export type CharsReturn = FunctionReturn<typeof functions.chars>
-
-export type FundsManagerParams = FunctionArguments<typeof functions.fundsManager>
-export type FundsManagerReturn = FunctionReturn<typeof functions.fundsManager>
-
-export type GetApprovedParams = FunctionArguments<typeof functions.getApproved>
-export type GetApprovedReturn = FunctionReturn<typeof functions.getApproved>
-
-export type IsApprovedForAllParams = FunctionArguments<typeof functions.isApprovedForAll>
-export type IsApprovedForAllReturn = FunctionReturn<typeof functions.isApprovedForAll>
-
-export type MintNativeParams = FunctionArguments<typeof functions.mintNative>
-export type MintNativeReturn = FunctionReturn<typeof functions.mintNative>
-
-export type MintToAuctionHouseParams = FunctionArguments<typeof functions.mintToAuctionHouse>
-export type MintToAuctionHouseReturn = FunctionReturn<typeof functions.mintToAuctionHouse>
-
-export type MintedParams = FunctionArguments<typeof functions.minted>
-export type MintedReturn = FunctionReturn<typeof functions.minted>
-
-export type NameParams = FunctionArguments<typeof functions.name>
-export type NameReturn = FunctionReturn<typeof functions.name>
-
-export type NamesParams = FunctionArguments<typeof functions.names>
-export type NamesReturn = FunctionReturn<typeof functions.names>
+export type MintsCountByRoundByAddressParams = FunctionArguments<typeof functions.mintsCountByRoundByAddress>
+export type MintsCountByRoundByAddressReturn = FunctionReturn<typeof functions.mintsCountByRoundByAddress>
 
 export type OwnerParams = FunctionArguments<typeof functions.owner>
 export type OwnerReturn = FunctionReturn<typeof functions.owner>
 
-export type OwnerOfParams = FunctionArguments<typeof functions.ownerOf>
-export type OwnerOfReturn = FunctionReturn<typeof functions.ownerOf>
+export type PaymentReceiverParams = FunctionArguments<typeof functions.paymentReceiver>
+export type PaymentReceiverReturn = FunctionReturn<typeof functions.paymentReceiver>
 
-export type PausedParams = FunctionArguments<typeof functions.paused>
-export type PausedReturn = FunctionReturn<typeof functions.paused>
+export type PricesParams = FunctionArguments<typeof functions.prices>
+export type PricesReturn = FunctionReturn<typeof functions.prices>
 
-export type PendingOwnerParams = FunctionArguments<typeof functions.pendingOwner>
-export type PendingOwnerReturn = FunctionReturn<typeof functions.pendingOwner>
+export type RecoverFundsParams = FunctionArguments<typeof functions.recoverFunds>
+export type RecoverFundsReturn = FunctionReturn<typeof functions.recoverFunds>
 
-export type PriceOracleParams = FunctionArguments<typeof functions.priceOracle>
-export type PriceOracleReturn = FunctionReturn<typeof functions.priceOracle>
+export type RegisterParams = FunctionArguments<typeof functions.register>
+export type RegisterReturn = FunctionReturn<typeof functions.register>
 
-export type RenewNativeParams = FunctionArguments<typeof functions.renewNative>
-export type RenewNativeReturn = FunctionReturn<typeof functions.renewNative>
+export type RegisterPriceParams = FunctionArguments<typeof functions.registerPrice>
+export type RegisterPriceReturn = FunctionReturn<typeof functions.registerPrice>
+
+export type RenewParams = FunctionArguments<typeof functions.renew>
+export type RenewReturn = FunctionReturn<typeof functions.renew>
 
 export type RenounceOwnershipParams = FunctionArguments<typeof functions.renounceOwnership>
 export type RenounceOwnershipReturn = FunctionReturn<typeof functions.renounceOwnership>
 
-export type ReverseLookupParams = FunctionArguments<typeof functions.reverseLookup>
-export type ReverseLookupReturn = FunctionReturn<typeof functions.reverseLookup>
+export type RentPriceParams = FunctionArguments<typeof functions.rentPrice>
+export type RentPriceReturn = FunctionReturn<typeof functions.rentPrice>
 
-export type SafeTransferFromParams_0 = FunctionArguments<typeof functions['safeTransferFrom(address,address,uint256)']>
-export type SafeTransferFromReturn_0 = FunctionReturn<typeof functions['safeTransferFrom(address,address,uint256)']>
+export type ReservedRegisterParams = FunctionArguments<typeof functions.reservedRegister>
+export type ReservedRegisterReturn = FunctionReturn<typeof functions.reservedRegister>
 
-export type SafeTransferFromParams_1 = FunctionArguments<typeof functions['safeTransferFrom(address,address,uint256,bytes)']>
-export type SafeTransferFromReturn_1 = FunctionReturn<typeof functions['safeTransferFrom(address,address,uint256,bytes)']>
+export type ReservedRegistryParams = FunctionArguments<typeof functions.reservedRegistry>
+export type ReservedRegistryReturn = FunctionReturn<typeof functions.reservedRegistry>
 
-export type SetApprovalForAllParams = FunctionArguments<typeof functions.setApprovalForAll>
-export type SetApprovalForAllReturn = FunctionReturn<typeof functions.setApprovalForAll>
+export type ReverseRegistrarParams = FunctionArguments<typeof functions.reverseRegistrar>
+export type ReverseRegistrarReturn = FunctionReturn<typeof functions.reverseRegistrar>
 
-export type SetWhitelistedParams = FunctionArguments<typeof functions.setWhitelisted>
-export type SetWhitelistedReturn = FunctionReturn<typeof functions.setWhitelisted>
+export type RootNameParams = FunctionArguments<typeof functions.rootName>
+export type RootNameReturn = FunctionReturn<typeof functions.rootName>
 
-export type SupportsInterfaceParams = FunctionArguments<typeof functions.supportsInterface>
-export type SupportsInterfaceReturn = FunctionReturn<typeof functions.supportsInterface>
+export type RootNodeParams = FunctionArguments<typeof functions.rootNode>
+export type RootNodeReturn = FunctionReturn<typeof functions.rootNode>
 
-export type SymbolParams = FunctionArguments<typeof functions.symbol>
-export type SymbolReturn = FunctionReturn<typeof functions.symbol>
+export type SetLaunchTimeParams = FunctionArguments<typeof functions.setLaunchTime>
+export type SetLaunchTimeReturn = FunctionReturn<typeof functions.setLaunchTime>
 
-export type TogglePauseParams = FunctionArguments<typeof functions.togglePause>
-export type TogglePauseReturn = FunctionReturn<typeof functions.togglePause>
+export type SetPaymentReceiverParams = FunctionArguments<typeof functions.setPaymentReceiver>
+export type SetPaymentReceiverReturn = FunctionReturn<typeof functions.setPaymentReceiver>
 
-export type ToggleWhitelistParams = FunctionArguments<typeof functions.toggleWhitelist>
-export type ToggleWhitelistReturn = FunctionReturn<typeof functions.toggleWhitelist>
+export type SetPriceOracleParams = FunctionArguments<typeof functions.setPriceOracle>
+export type SetPriceOracleReturn = FunctionReturn<typeof functions.setPriceOracle>
 
-export type TokenByIndexParams = FunctionArguments<typeof functions.tokenByIndex>
-export type TokenByIndexReturn = FunctionReturn<typeof functions.tokenByIndex>
+export type SetReservedNamesMinterParams = FunctionArguments<typeof functions.setReservedNamesMinter>
+export type SetReservedNamesMinterReturn = FunctionReturn<typeof functions.setReservedNamesMinter>
 
-export type TokenOfOwnerByIndexParams = FunctionArguments<typeof functions.tokenOfOwnerByIndex>
-export type TokenOfOwnerByIndexReturn = FunctionReturn<typeof functions.tokenOfOwnerByIndex>
-
-export type TokenURIParams = FunctionArguments<typeof functions.tokenURI>
-export type TokenURIReturn = FunctionReturn<typeof functions.tokenURI>
-
-export type TotalSupplyParams = FunctionArguments<typeof functions.totalSupply>
-export type TotalSupplyReturn = FunctionReturn<typeof functions.totalSupply>
-
-export type TransferFromParams = FunctionArguments<typeof functions.transferFrom>
-export type TransferFromReturn = FunctionReturn<typeof functions.transferFrom>
+export type SetReverseRegistrarParams = FunctionArguments<typeof functions.setReverseRegistrar>
+export type SetReverseRegistrarReturn = FunctionReturn<typeof functions.setReverseRegistrar>
 
 export type TransferOwnershipParams = FunctionArguments<typeof functions.transferOwnership>
 export type TransferOwnershipReturn = FunctionReturn<typeof functions.transferOwnership>
 
-export type UpdateMetadataURIParams = FunctionArguments<typeof functions.updateMetadataURI>
-export type UpdateMetadataURIReturn = FunctionReturn<typeof functions.updateMetadataURI>
+export type UsedFreeMintsSignaturesParams = FunctionArguments<typeof functions.usedFreeMintsSignatures>
+export type UsedFreeMintsSignaturesReturn = FunctionReturn<typeof functions.usedFreeMintsSignatures>
 
-export type UpdateWhoisParams = FunctionArguments<typeof functions.updateWhois>
-export type UpdateWhoisReturn = FunctionReturn<typeof functions.updateWhois>
+export type UsedSignaturesParams = FunctionArguments<typeof functions.usedSignatures>
+export type UsedSignaturesReturn = FunctionReturn<typeof functions.usedSignatures>
 
-export type WhitelistEnabledParams = FunctionArguments<typeof functions.whitelistEnabled>
-export type WhitelistEnabledReturn = FunctionReturn<typeof functions.whitelistEnabled>
+export type ValidParams = FunctionArguments<typeof functions.valid>
+export type ValidReturn = FunctionReturn<typeof functions.valid>
+
+export type WhitelistFreeRegisterParams = FunctionArguments<typeof functions.whitelistFreeRegister>
+export type WhitelistFreeRegisterReturn = FunctionReturn<typeof functions.whitelistFreeRegister>
+
+export type WhitelistRegisterParams = FunctionArguments<typeof functions.whitelistRegister>
+export type WhitelistRegisterReturn = FunctionReturn<typeof functions.whitelistRegister>
+
+export type WhitelistValidatorParams = FunctionArguments<typeof functions.whitelistValidator>
+export type WhitelistValidatorReturn = FunctionReturn<typeof functions.whitelistValidator>
+
+export type WithdrawETHParams = FunctionArguments<typeof functions.withdrawETH>
+export type WithdrawETHReturn = FunctionReturn<typeof functions.withdrawETH>
 
