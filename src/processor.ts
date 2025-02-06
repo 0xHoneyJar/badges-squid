@@ -55,10 +55,7 @@ export const processor = new EvmBatchProcessor()
   })
   .addLog({
     address: [BERA_NAME_REGISTRY_ADDRESS],
-    topic0: [
-      beranameAbi.events.UpdateWhois.topic,
-      beranameAbi.events.Mint.topic,
-    ],
+    topic0: [beranameAbi.events.NameRegistered.topic],
   });
 
 export function formatAddressTopic(address: string): string {

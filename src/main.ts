@@ -10,12 +10,12 @@ import {
   BadgeAmount,
   BadgeHolder,
   Beraname,
+  Block,
   CancelBoost,
   Distribution,
   DistributionReward,
   DropBoost,
   QueueBoost,
-  Block,
 } from "./model";
 import { processor } from "./processor";
 
@@ -70,10 +70,8 @@ async function processLog(log: any, ctx: any, entities: any, header: any) {
     await processCancelBoost(log, ctx, entities, header);
   } else if (bgtAbi.events.DropBoost.is(log)) {
     await processDropBoost(log, ctx, entities, header);
-  } else if (beranameAbi.events.Mint.is(log)) {
-    await processBeranameMint(log, ctx, entities);
-  } else if (beranameAbi.events.UpdateWhois.is(log)) {
-    await processBeranameUpdateWhois(log, ctx, entities);
+  } else if (beranameAbi.events.NameRegistered.is(log)) {
+    await processBeranameNameRegistered(log, ctx, entities);
   } else if (
     log.address === DISTRIBUTOR_ADDRESS &&
     distributorAbi.events.Distributed.is(log)
@@ -229,11 +227,15 @@ async function processActivateBoost(
   entities.activateBoosts.set(id, activateBoost);
 }
 
-async function processBeranameMint(log: Log, ctx: any, entities: any) {
-  const { id, chars, to } = beranameAbi.events.Mint.decode(log);
-  const beranameId = id.toString();
-  const name = chars.join("");
-  const ownerAddress = to.toLowerCase();
+async function processBeranameNameRegistered(
+  log: Log,
+  ctx: any,
+  entities: any
+) {
+  const { name, label, owner, expires } =
+    beranameAbi.events.NameRegistered.decode(log);
+  const beranameId = label.toString();
+  const ownerAddress = owner.toLowerCase();
 
   // Get or create the BadgeHolder
   let holder =
@@ -258,20 +260,6 @@ async function processBeranameMint(log: Log, ctx: any, entities: any) {
       expiry: BigInt(0), // We'll need to update this with the actual expiry
       metadataURI: "",
     });
-    entities.beranames.set(beranameId, beraname);
-  }
-}
-
-async function processBeranameUpdateWhois(log: Log, ctx: any, entities: any) {
-  const { id, aka } = beranameAbi.events.UpdateWhois.decode(log);
-  const beranameId = id.toString();
-  const newWhois = aka.toLowerCase();
-
-  let beraname =
-    entities.beranames.get(beranameId) ||
-    (await ctx.store.get(Beraname, beranameId));
-  if (beraname) {
-    beraname.whois = newWhois;
     entities.beranames.set(beranameId, beraname);
   }
 }
