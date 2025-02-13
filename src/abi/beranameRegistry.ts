@@ -3,234 +3,92 @@ import { event, fun, viewFun, indexed, ContractBase } from '@subsquid/evm-abi'
 import type { EventParams as EParams, FunctionArguments, FunctionReturn } from '@subsquid/evm-abi'
 
 export const events = {
-    ETHPaymentProcessed: event("0xbc769889246686134856b409155bb87630ea5797a705fa98b61f576d316aab9b", "ETHPaymentProcessed(address,uint256)", {"payee": indexed(p.address), "price": p.uint256}),
-    LaunchTimeUpdated: event("0xdb5fc205901030b15dae0c28aeedbdf381585f7e12f86855899a3b5328aa34e9", "LaunchTimeUpdated(uint256)", {"newLaunchTime": p.uint256}),
-    NameRegistered: event("0x0667086d08417333ce63f40d5bc2ef6fd330e25aaaf317b7c489541f8fe600fa", "NameRegistered(string,bytes32,address,uint256)", {"name": p.string, "label": indexed(p.bytes32), "owner": indexed(p.address), "expires": p.uint256}),
-    NameRegisteredWithReferral: event("0x1124fcbf46055234a873086b844a44635d54b982d7b4ca7e1631d51a7950e665", "NameRegisteredWithReferral(string,bytes32,address,address,uint256)", {"name": p.string, "label": indexed(p.bytes32), "owner": indexed(p.address), "referral": indexed(p.address), "expires": p.uint256}),
-    NameRenewed: event("0x93bc1a84707231b1d9552157299797c64a1a8c5bc79f05153716630c9c4936fc", "NameRenewed(string,bytes32,uint256)", {"name": p.string, "label": indexed(p.bytes32), "expires": p.uint256}),
-    OwnershipTransferred: event("0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0", "OwnershipTransferred(address,address)", {"previousOwner": indexed(p.address), "newOwner": indexed(p.address)}),
-    PaymentReceiverUpdated: event("0x6cfddd24d2afc1b9f31d51f0ef77029fdde044799f0a87a2a09b7673b6097422", "PaymentReceiverUpdated(address)", {"newPaymentReceiver": p.address}),
-    PriceOracleUpdated: event("0xefe8ab924ca486283a79dc604baa67add51afb82af1db8ac386ebbba643cdffd", "PriceOracleUpdated(address)", {"newPrices": p.address}),
-    ReservedNamesMinterChanged: event("0x1c8833ad9579b88233573f0b91eb8ab86e24450f9e11151c6387dff4d5b4f61a", "ReservedNamesMinterChanged(address)", {"newReservedNameMinterAddress": p.address}),
-    ReverseRegistrarUpdated: event("0xd192c0b229b00473ccb6ccfebf6642805bca1dcdf2d9fb4fd102c7dc7ea4ce23", "ReverseRegistrarUpdated(address)", {"newReverseRegistrar": p.address}),
+    ApprovalForAll: event("0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31", "ApprovalForAll(address,address,bool)", {"owner": indexed(p.address), "operator": indexed(p.address), "approved": p.bool}),
+    NewOwner: event("0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82", "NewOwner(bytes32,bytes32,address)", {"node": indexed(p.bytes32), "label": indexed(p.bytes32), "owner": p.address}),
+    NewResolver: event("0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0", "NewResolver(bytes32,address)", {"node": indexed(p.bytes32), "resolver": p.address}),
+    NewTTL: event("0x1d4f9bbfc9cab89d66e1a1562f2233ccbf1308cb4f63de2ead5787adddb8fa68", "NewTTL(bytes32,uint64)", {"node": indexed(p.bytes32), "ttl": p.uint64}),
+    Transfer: event("0xd4735d920b0f87494915f556dd9b54c8f309026070caea5c737245152564d266", "Transfer(bytes32,address)", {"node": indexed(p.bytes32), "owner": p.address}),
 }
 
 export const functions = {
-    MIN_NAME_LENGTH: viewFun("0x50cfeddd", "MIN_NAME_LENGTH()", {}, p.uint256),
-    MIN_REGISTRATION_DURATION: viewFun("0x8a95b09f", "MIN_REGISTRATION_DURATION()", {}, p.uint256),
-    available: viewFun("0xaeb8ce9b", "available(string)", {"name": p.string}, p.bool),
-    launchTime: viewFun("0x790ca413", "launchTime()", {}, p.uint256),
-    mintsCountByRoundByAddress: viewFun("0x501b3fd7", "mintsCountByRoundByAddress(address,uint256)", {"_0": p.address, "_1": p.uint256}, p.uint256),
-    owner: viewFun("0x8da5cb5b", "owner()", {}, p.address),
-    paymentReceiver: viewFun("0xcb37f3b2", "paymentReceiver()", {}, p.address),
-    prices: viewFun("0xd3419bf3", "prices()", {}, p.address),
-    recoverFunds: fun("0x5d3590d5", "recoverFunds(address,address,uint256)", {"_token": p.address, "_to": p.address, "_amount": p.uint256}, ),
-    register: fun("0xeeb144da", "register((string,address,uint256,address,bytes[],bool,address))", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address})}, ),
-    registerPrice: viewFun("0xe72c1e55", "registerPrice(string,uint256)", {"name": p.string, "duration": p.uint256}, p.uint256),
-    renew: fun("0xacf1a841", "renew(string,uint256)", {"name": p.string, "duration": p.uint256}, ),
-    renounceOwnership: fun("0x715018a6", "renounceOwnership()", {}, ),
-    rentPrice: viewFun("0x83e7f6ff", "rentPrice(string,uint256)", {"name": p.string, "duration": p.uint256}, p.struct({"base": p.uint256, "discount": p.uint256})),
-    reservedRegister: fun("0xdc7daea3", "reservedRegister((string,address,uint256,address,bytes[],bool,address))", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address})}, ),
-    reservedRegistry: viewFun("0xd2ff3bdc", "reservedRegistry()", {}, p.address),
-    reverseRegistrar: viewFun("0x80869853", "reverseRegistrar()", {}, p.address),
-    rootName: viewFun("0xf20387df", "rootName()", {}, p.string),
-    rootNode: viewFun("0xfaff50a8", "rootNode()", {}, p.bytes32),
-    setLaunchTime: fun("0x9ff46e74", "setLaunchTime(uint256)", {"launchTime_": p.uint256}, ),
-    setPaymentReceiver: fun("0x65ebf99a", "setPaymentReceiver(address)", {"paymentReceiver_": p.address}, ),
-    setPriceOracle: fun("0x530e784f", "setPriceOracle(address)", {"prices_": p.address}, ),
-    setReservedNamesMinter: fun("0x5829831d", "setReservedNamesMinter(address)", {"reservedNamesMinter_": p.address}, ),
-    setReverseRegistrar: fun("0x557499ba", "setReverseRegistrar(address)", {"reverse_": p.address}, ),
-    transferOwnership: fun("0xf2fde38b", "transferOwnership(address)", {"newOwner": p.address}, ),
-    usedFreeMintsSignatures: viewFun("0x54826fe7", "usedFreeMintsSignatures(bytes32)", {"_0": p.bytes32}, p.bool),
-    usedSignatures: viewFun("0xf978fd61", "usedSignatures(bytes32)", {"_0": p.bytes32}, p.bool),
-    valid: viewFun("0x9791c097", "valid(string)", {"name": p.string}, p.bool),
-    whitelistFreeRegister: fun("0xd57a11f1", "whitelistFreeRegister((string,address,uint256,address,bytes[],bool,address),bytes)", {"request": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address}), "signature": p.bytes}, ),
-    whitelistRegister: fun("0xb36c3be8", "whitelistRegister(((string,address,uint256,address,bytes[],bool,address),uint256,uint256),bytes)", {"request": p.struct({"registerRequest": p.struct({"name": p.string, "owner": p.address, "duration": p.uint256, "resolver": p.address, "data": p.array(p.bytes), "reverseRecord": p.bool, "referrer": p.address}), "round_id": p.uint256, "round_total_mint": p.uint256}), "signature": p.bytes}, ),
-    whitelistValidator: viewFun("0xb9b6caed", "whitelistValidator()", {}, p.address),
-    withdrawETH: fun("0xe086e5ec", "withdrawETH()", {}, ),
+    isApprovedForAll: viewFun("0xe985e9c5", "isApprovedForAll(address,address)", {"owner_": p.address, "operator_": p.address}, p.bool),
+    owner: viewFun("0x02571be3", "owner(bytes32)", {"node_": p.bytes32}, p.address),
+    recordExists: viewFun("0xf79fe538", "recordExists(bytes32)", {"node_": p.bytes32}, p.bool),
+    resolver: viewFun("0x0178b8bf", "resolver(bytes32)", {"node_": p.bytes32}, p.address),
+    setApprovalForAll: fun("0xa22cb465", "setApprovalForAll(address,bool)", {"operator_": p.address, "approved_": p.bool}, ),
+    setOwner: fun("0x5b0fc9c3", "setOwner(bytes32,address)", {"node_": p.bytes32, "owner_": p.address}, ),
+    setRecord: fun("0xcf408823", "setRecord(bytes32,address,address,uint64)", {"node_": p.bytes32, "owner_": p.address, "resolver_": p.address, "ttl_": p.uint64}, ),
+    setResolver: fun("0x1896f70a", "setResolver(bytes32,address)", {"node_": p.bytes32, "resolver_": p.address}, ),
+    setSubnodeOwner: fun("0x06ab5923", "setSubnodeOwner(bytes32,bytes32,address)", {"node_": p.bytes32, "label_": p.bytes32, "owner_": p.address}, p.bytes32),
+    setSubnodeRecord: fun("0x5ef2c7f0", "setSubnodeRecord(bytes32,bytes32,address,address,uint64)", {"node_": p.bytes32, "label_": p.bytes32, "owner_": p.address, "resolver_": p.address, "ttl_": p.uint64}, ),
+    setTTL: fun("0x14ab9038", "setTTL(bytes32,uint64)", {"node_": p.bytes32, "ttl_": p.uint64}, ),
+    ttl: viewFun("0x16a25cbd", "ttl(bytes32)", {"node_": p.bytes32}, p.uint64),
 }
 
 export class Contract extends ContractBase {
 
-    MIN_NAME_LENGTH() {
-        return this.eth_call(functions.MIN_NAME_LENGTH, {})
+    isApprovedForAll(owner_: IsApprovedForAllParams["owner_"], operator_: IsApprovedForAllParams["operator_"]) {
+        return this.eth_call(functions.isApprovedForAll, {owner_, operator_})
     }
 
-    MIN_REGISTRATION_DURATION() {
-        return this.eth_call(functions.MIN_REGISTRATION_DURATION, {})
+    owner(node_: OwnerParams["node_"]) {
+        return this.eth_call(functions.owner, {node_})
     }
 
-    available(name: AvailableParams["name"]) {
-        return this.eth_call(functions.available, {name})
+    recordExists(node_: RecordExistsParams["node_"]) {
+        return this.eth_call(functions.recordExists, {node_})
     }
 
-    launchTime() {
-        return this.eth_call(functions.launchTime, {})
+    resolver(node_: ResolverParams["node_"]) {
+        return this.eth_call(functions.resolver, {node_})
     }
 
-    mintsCountByRoundByAddress(_0: MintsCountByRoundByAddressParams["_0"], _1: MintsCountByRoundByAddressParams["_1"]) {
-        return this.eth_call(functions.mintsCountByRoundByAddress, {_0, _1})
-    }
-
-    owner() {
-        return this.eth_call(functions.owner, {})
-    }
-
-    paymentReceiver() {
-        return this.eth_call(functions.paymentReceiver, {})
-    }
-
-    prices() {
-        return this.eth_call(functions.prices, {})
-    }
-
-    registerPrice(name: RegisterPriceParams["name"], duration: RegisterPriceParams["duration"]) {
-        return this.eth_call(functions.registerPrice, {name, duration})
-    }
-
-    rentPrice(name: RentPriceParams["name"], duration: RentPriceParams["duration"]) {
-        return this.eth_call(functions.rentPrice, {name, duration})
-    }
-
-    reservedRegistry() {
-        return this.eth_call(functions.reservedRegistry, {})
-    }
-
-    reverseRegistrar() {
-        return this.eth_call(functions.reverseRegistrar, {})
-    }
-
-    rootName() {
-        return this.eth_call(functions.rootName, {})
-    }
-
-    rootNode() {
-        return this.eth_call(functions.rootNode, {})
-    }
-
-    usedFreeMintsSignatures(_0: UsedFreeMintsSignaturesParams["_0"]) {
-        return this.eth_call(functions.usedFreeMintsSignatures, {_0})
-    }
-
-    usedSignatures(_0: UsedSignaturesParams["_0"]) {
-        return this.eth_call(functions.usedSignatures, {_0})
-    }
-
-    valid(name: ValidParams["name"]) {
-        return this.eth_call(functions.valid, {name})
-    }
-
-    whitelistValidator() {
-        return this.eth_call(functions.whitelistValidator, {})
+    ttl(node_: TtlParams["node_"]) {
+        return this.eth_call(functions.ttl, {node_})
     }
 }
 
 /// Event types
-export type ETHPaymentProcessedEventArgs = EParams<typeof events.ETHPaymentProcessed>
-export type LaunchTimeUpdatedEventArgs = EParams<typeof events.LaunchTimeUpdated>
-export type NameRegisteredEventArgs = EParams<typeof events.NameRegistered>
-export type NameRegisteredWithReferralEventArgs = EParams<typeof events.NameRegisteredWithReferral>
-export type NameRenewedEventArgs = EParams<typeof events.NameRenewed>
-export type OwnershipTransferredEventArgs = EParams<typeof events.OwnershipTransferred>
-export type PaymentReceiverUpdatedEventArgs = EParams<typeof events.PaymentReceiverUpdated>
-export type PriceOracleUpdatedEventArgs = EParams<typeof events.PriceOracleUpdated>
-export type ReservedNamesMinterChangedEventArgs = EParams<typeof events.ReservedNamesMinterChanged>
-export type ReverseRegistrarUpdatedEventArgs = EParams<typeof events.ReverseRegistrarUpdated>
+export type ApprovalForAllEventArgs = EParams<typeof events.ApprovalForAll>
+export type NewOwnerEventArgs = EParams<typeof events.NewOwner>
+export type NewResolverEventArgs = EParams<typeof events.NewResolver>
+export type NewTTLEventArgs = EParams<typeof events.NewTTL>
+export type TransferEventArgs = EParams<typeof events.Transfer>
 
 /// Function types
-export type MIN_NAME_LENGTHParams = FunctionArguments<typeof functions.MIN_NAME_LENGTH>
-export type MIN_NAME_LENGTHReturn = FunctionReturn<typeof functions.MIN_NAME_LENGTH>
-
-export type MIN_REGISTRATION_DURATIONParams = FunctionArguments<typeof functions.MIN_REGISTRATION_DURATION>
-export type MIN_REGISTRATION_DURATIONReturn = FunctionReturn<typeof functions.MIN_REGISTRATION_DURATION>
-
-export type AvailableParams = FunctionArguments<typeof functions.available>
-export type AvailableReturn = FunctionReturn<typeof functions.available>
-
-export type LaunchTimeParams = FunctionArguments<typeof functions.launchTime>
-export type LaunchTimeReturn = FunctionReturn<typeof functions.launchTime>
-
-export type MintsCountByRoundByAddressParams = FunctionArguments<typeof functions.mintsCountByRoundByAddress>
-export type MintsCountByRoundByAddressReturn = FunctionReturn<typeof functions.mintsCountByRoundByAddress>
+export type IsApprovedForAllParams = FunctionArguments<typeof functions.isApprovedForAll>
+export type IsApprovedForAllReturn = FunctionReturn<typeof functions.isApprovedForAll>
 
 export type OwnerParams = FunctionArguments<typeof functions.owner>
 export type OwnerReturn = FunctionReturn<typeof functions.owner>
 
-export type PaymentReceiverParams = FunctionArguments<typeof functions.paymentReceiver>
-export type PaymentReceiverReturn = FunctionReturn<typeof functions.paymentReceiver>
+export type RecordExistsParams = FunctionArguments<typeof functions.recordExists>
+export type RecordExistsReturn = FunctionReturn<typeof functions.recordExists>
 
-export type PricesParams = FunctionArguments<typeof functions.prices>
-export type PricesReturn = FunctionReturn<typeof functions.prices>
+export type ResolverParams = FunctionArguments<typeof functions.resolver>
+export type ResolverReturn = FunctionReturn<typeof functions.resolver>
 
-export type RecoverFundsParams = FunctionArguments<typeof functions.recoverFunds>
-export type RecoverFundsReturn = FunctionReturn<typeof functions.recoverFunds>
+export type SetApprovalForAllParams = FunctionArguments<typeof functions.setApprovalForAll>
+export type SetApprovalForAllReturn = FunctionReturn<typeof functions.setApprovalForAll>
 
-export type RegisterParams = FunctionArguments<typeof functions.register>
-export type RegisterReturn = FunctionReturn<typeof functions.register>
+export type SetOwnerParams = FunctionArguments<typeof functions.setOwner>
+export type SetOwnerReturn = FunctionReturn<typeof functions.setOwner>
 
-export type RegisterPriceParams = FunctionArguments<typeof functions.registerPrice>
-export type RegisterPriceReturn = FunctionReturn<typeof functions.registerPrice>
+export type SetRecordParams = FunctionArguments<typeof functions.setRecord>
+export type SetRecordReturn = FunctionReturn<typeof functions.setRecord>
 
-export type RenewParams = FunctionArguments<typeof functions.renew>
-export type RenewReturn = FunctionReturn<typeof functions.renew>
+export type SetResolverParams = FunctionArguments<typeof functions.setResolver>
+export type SetResolverReturn = FunctionReturn<typeof functions.setResolver>
 
-export type RenounceOwnershipParams = FunctionArguments<typeof functions.renounceOwnership>
-export type RenounceOwnershipReturn = FunctionReturn<typeof functions.renounceOwnership>
+export type SetSubnodeOwnerParams = FunctionArguments<typeof functions.setSubnodeOwner>
+export type SetSubnodeOwnerReturn = FunctionReturn<typeof functions.setSubnodeOwner>
 
-export type RentPriceParams = FunctionArguments<typeof functions.rentPrice>
-export type RentPriceReturn = FunctionReturn<typeof functions.rentPrice>
+export type SetSubnodeRecordParams = FunctionArguments<typeof functions.setSubnodeRecord>
+export type SetSubnodeRecordReturn = FunctionReturn<typeof functions.setSubnodeRecord>
 
-export type ReservedRegisterParams = FunctionArguments<typeof functions.reservedRegister>
-export type ReservedRegisterReturn = FunctionReturn<typeof functions.reservedRegister>
+export type SetTTLParams = FunctionArguments<typeof functions.setTTL>
+export type SetTTLReturn = FunctionReturn<typeof functions.setTTL>
 
-export type ReservedRegistryParams = FunctionArguments<typeof functions.reservedRegistry>
-export type ReservedRegistryReturn = FunctionReturn<typeof functions.reservedRegistry>
-
-export type ReverseRegistrarParams = FunctionArguments<typeof functions.reverseRegistrar>
-export type ReverseRegistrarReturn = FunctionReturn<typeof functions.reverseRegistrar>
-
-export type RootNameParams = FunctionArguments<typeof functions.rootName>
-export type RootNameReturn = FunctionReturn<typeof functions.rootName>
-
-export type RootNodeParams = FunctionArguments<typeof functions.rootNode>
-export type RootNodeReturn = FunctionReturn<typeof functions.rootNode>
-
-export type SetLaunchTimeParams = FunctionArguments<typeof functions.setLaunchTime>
-export type SetLaunchTimeReturn = FunctionReturn<typeof functions.setLaunchTime>
-
-export type SetPaymentReceiverParams = FunctionArguments<typeof functions.setPaymentReceiver>
-export type SetPaymentReceiverReturn = FunctionReturn<typeof functions.setPaymentReceiver>
-
-export type SetPriceOracleParams = FunctionArguments<typeof functions.setPriceOracle>
-export type SetPriceOracleReturn = FunctionReturn<typeof functions.setPriceOracle>
-
-export type SetReservedNamesMinterParams = FunctionArguments<typeof functions.setReservedNamesMinter>
-export type SetReservedNamesMinterReturn = FunctionReturn<typeof functions.setReservedNamesMinter>
-
-export type SetReverseRegistrarParams = FunctionArguments<typeof functions.setReverseRegistrar>
-export type SetReverseRegistrarReturn = FunctionReturn<typeof functions.setReverseRegistrar>
-
-export type TransferOwnershipParams = FunctionArguments<typeof functions.transferOwnership>
-export type TransferOwnershipReturn = FunctionReturn<typeof functions.transferOwnership>
-
-export type UsedFreeMintsSignaturesParams = FunctionArguments<typeof functions.usedFreeMintsSignatures>
-export type UsedFreeMintsSignaturesReturn = FunctionReturn<typeof functions.usedFreeMintsSignatures>
-
-export type UsedSignaturesParams = FunctionArguments<typeof functions.usedSignatures>
-export type UsedSignaturesReturn = FunctionReturn<typeof functions.usedSignatures>
-
-export type ValidParams = FunctionArguments<typeof functions.valid>
-export type ValidReturn = FunctionReturn<typeof functions.valid>
-
-export type WhitelistFreeRegisterParams = FunctionArguments<typeof functions.whitelistFreeRegister>
-export type WhitelistFreeRegisterReturn = FunctionReturn<typeof functions.whitelistFreeRegister>
-
-export type WhitelistRegisterParams = FunctionArguments<typeof functions.whitelistRegister>
-export type WhitelistRegisterReturn = FunctionReturn<typeof functions.whitelistRegister>
-
-export type WhitelistValidatorParams = FunctionArguments<typeof functions.whitelistValidator>
-export type WhitelistValidatorReturn = FunctionReturn<typeof functions.whitelistValidator>
-
-export type WithdrawETHParams = FunctionArguments<typeof functions.withdrawETH>
-export type WithdrawETHReturn = FunctionReturn<typeof functions.withdrawETH>
+export type TtlParams = FunctionArguments<typeof functions.ttl>
+export type TtlReturn = FunctionReturn<typeof functions.ttl>
 

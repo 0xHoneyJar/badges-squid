@@ -2,6 +2,7 @@ import { Log } from "@subsquid/evm-processor";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
 import * as beranameAbi from "./abi/beranameRegistry";
+import * as resolverAbi from "./abi/beranameResolver";
 import * as bgtAbi from "./abi/bgt";
 import * as distributorAbi from "./abi/distributor";
 import * as erc20Abi from "./abi/erc20";
@@ -70,8 +71,10 @@ async function processLog(log: any, ctx: any, entities: any, header: any) {
     await processCancelBoost(log, ctx, entities, header);
   } else if (bgtAbi.events.DropBoost.is(log)) {
     await processDropBoost(log, ctx, entities, header);
-  } else if (beranameAbi.events.NameRegistered.is(log)) {
-    await processBeranameNameRegistered(log, ctx, entities);
+  } else if (beranameAbi.events.NewOwner.is(log)) {
+    await processBeranameNewOwner(log, ctx, entities);
+  } else if (resolverAbi.events.NameChanged.is(log)) {
+    await processBeranameNameChanged(log, ctx, entities);
   } else if (
     log.address === DISTRIBUTOR_ADDRESS &&
     distributorAbi.events.Distributed.is(log)
@@ -227,13 +230,8 @@ async function processActivateBoost(
   entities.activateBoosts.set(id, activateBoost);
 }
 
-async function processBeranameNameRegistered(
-  log: Log,
-  ctx: any,
-  entities: any
-) {
-  const { name, label, owner, expires } =
-    beranameAbi.events.NameRegistered.decode(log);
+async function processBeranameNewOwner(log: Log, ctx: any, entities: any) {
+  const { node, label, owner } = beranameAbi.events.NewOwner.decode(log);
   const beranameId = label.toString();
   const ownerAddress = owner.toLowerCase();
 
@@ -241,6 +239,7 @@ async function processBeranameNameRegistered(
   let holder =
     entities.badgeHolders.get(ownerAddress) ||
     (await ctx.store.get(BadgeHolder, ownerAddress));
+
   if (!holder) {
     holder = new BadgeHolder({
       id: ownerAddress,
@@ -250,16 +249,35 @@ async function processBeranameNameRegistered(
     entities.badgeHolders.set(ownerAddress, holder);
   }
 
+  // Get or create the Beraname
   let beraname = entities.beranames.get(beranameId);
   if (!beraname) {
     beraname = new Beraname({
       id: beranameId,
-      name: name,
-      owner: holder, // Now we're assigning the BadgeHolder object
+      name: "", // Name will be set when NameChanged event is processed
+      owner: holder,
       whois: ownerAddress,
-      expiry: BigInt(0), // We'll need to update this with the actual expiry
+      expiry: BigInt(0),
       metadataURI: "",
     });
+  } else {
+    beraname.owner = holder;
+    beraname.whois = ownerAddress;
+  }
+  entities.beranames.set(beranameId, beraname);
+}
+
+async function processBeranameNameChanged(log: Log, ctx: any, entities: any) {
+  const { node, name } = resolverAbi.events.NameChanged.decode(log);
+  const beranameId = node.toString();
+
+  // Get or create the Beraname
+  let beraname =
+    entities.beranames.get(beranameId) ||
+    (await ctx.store.get(Beraname, beranameId));
+
+  if (beraname) {
+    beraname.name = name;
     entities.beranames.set(beranameId, beraname);
   }
 }
