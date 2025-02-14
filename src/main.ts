@@ -1,11 +1,11 @@
 import { Log } from "@subsquid/evm-processor";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as badgesAbi from "./abi/badges";
-import * as beranameAbi from "./abi/beranameRegistry";
 import * as resolverAbi from "./abi/beranameResolver";
 import * as bgtAbi from "./abi/bgt";
 import * as distributorAbi from "./abi/distributor";
 import * as erc20Abi from "./abi/erc20";
+import * as registrarControllerAbi from "./abi/registrarController";
 import {
   ActivateBoost,
   BadgeAmount,
@@ -71,8 +71,8 @@ async function processLog(log: any, ctx: any, entities: any, header: any) {
     await processCancelBoost(log, ctx, entities, header);
   } else if (bgtAbi.events.DropBoost.is(log)) {
     await processDropBoost(log, ctx, entities, header);
-  } else if (beranameAbi.events.NewOwner.is(log)) {
-    await processBeranameNewOwner(log, ctx, entities);
+  } else if (registrarControllerAbi.events.NameRegistered.is(log)) {
+    await processBeranameRegistered(log, ctx, entities);
   } else if (resolverAbi.events.NameChanged.is(log)) {
     await processBeranameNameChanged(log, ctx, entities);
   } else if (
@@ -230,8 +230,9 @@ async function processActivateBoost(
   entities.activateBoosts.set(id, activateBoost);
 }
 
-async function processBeranameNewOwner(log: Log, ctx: any, entities: any) {
-  const { node, label, owner } = beranameAbi.events.NewOwner.decode(log);
+async function processBeranameRegistered(log: Log, ctx: any, entities: any) {
+  const { name, label, owner, expires } =
+    registrarControllerAbi.events.NameRegistered.decode(log);
   const beranameId = label.toString();
   const ownerAddress = owner.toLowerCase();
 
@@ -249,20 +250,22 @@ async function processBeranameNewOwner(log: Log, ctx: any, entities: any) {
     entities.badgeHolders.set(ownerAddress, holder);
   }
 
-  // Get or create the Beraname
+  // Create or update the Beraname
   let beraname = entities.beranames.get(beranameId);
   if (!beraname) {
     beraname = new Beraname({
       id: beranameId,
-      name: "", // Name will be set when NameChanged event is processed
+      name: name,
       owner: holder,
       whois: ownerAddress,
-      expiry: BigInt(0),
+      expiry: BigInt(expires),
       metadataURI: "",
     });
   } else {
     beraname.owner = holder;
     beraname.whois = ownerAddress;
+    beraname.name = name;
+    beraname.expiry = BigInt(expires);
   }
   entities.beranames.set(beranameId, beraname);
 }
@@ -271,7 +274,6 @@ async function processBeranameNameChanged(log: Log, ctx: any, entities: any) {
   const { node, name } = resolverAbi.events.NameChanged.decode(log);
   const beranameId = node.toString();
 
-  // Get or create the Beraname
   let beraname =
     entities.beranames.get(beranameId) ||
     (await ctx.store.get(Beraname, beranameId));

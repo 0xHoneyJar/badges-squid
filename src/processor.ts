@@ -8,16 +8,12 @@ import {
 } from "@subsquid/evm-processor";
 import { assertNotNull } from "@subsquid/util-internal";
 import * as badgesAbi from "./abi/badges";
-import * as beranameAbi from "./abi/beranameRegistry";
 import * as resolverAbi from "./abi/beranameResolver";
-import * as bgtAbi from "./abi/bgt";
-import * as distributorAbi from "./abi/distributor";
+import * as registrarControllerAbi from "./abi/registrarController";
 import {
   BERANAME_RESOLVER_ADDRESS,
-  BGT_ADDRESS,
   CUB_ADDRESS,
-  DISTRIBUTOR_ADDRESS,
-  THJ_VALIDATOR_ADDRESS,
+  REGISTRAR_CONTROLLER_ADDRESS,
 } from "./addresses";
 
 export const processor = new EvmBatchProcessor()
@@ -30,7 +26,7 @@ export const processor = new EvmBatchProcessor()
   })
   .setFinalityConfirmation(5)
   .setBlockRange({
-    from: 80000, // deployment block of factory
+    from: 877007, // deployment block of factory
   })
   .addLog({
     address: [CUB_ADDRESS], // Factory contract address
@@ -39,30 +35,32 @@ export const processor = new EvmBatchProcessor()
       badgesAbi.events.TransferSingle.topic,
     ],
   })
+  // .addLog({
+  //   address: [BGT_ADDRESS],
+  //   topic0: [
+  //     bgtAbi.events.QueueBoost.topic,
+  //     bgtAbi.events.ActivateBoost.topic,
+  //     bgtAbi.events.CancelBoost.topic,
+  //     bgtAbi.events.DropBoost.topic,
+  //   ],
+  //   topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
+  //   transaction: true,
+  // })
+  // .addLog({
+  //   address: [DISTRIBUTOR_ADDRESS],
+  //   topic0: [distributorAbi.events.Distributed.topic],
+  //   topic1: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
+  //   transactionLogs: true,
+  //   transaction: true,
+  // })
+
   .addLog({
-    address: [BGT_ADDRESS],
-    topic0: [
-      bgtAbi.events.QueueBoost.topic,
-      bgtAbi.events.ActivateBoost.topic,
-      bgtAbi.events.CancelBoost.topic,
-      bgtAbi.events.DropBoost.topic,
-    ],
-    topic2: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
-    transaction: true,
-  })
-  .addLog({
-    address: [DISTRIBUTOR_ADDRESS],
-    topic0: [distributorAbi.events.Distributed.topic],
-    topic1: [formatAddressTopic(THJ_VALIDATOR_ADDRESS)],
-    transactionLogs: true,
-    transaction: true,
+    address: [REGISTRAR_CONTROLLER_ADDRESS],
+    topic0: [registrarControllerAbi.events.NameRegistered.topic],
   })
   .addLog({
     address: [BERANAME_RESOLVER_ADDRESS],
-    topic0: [
-      beranameAbi.events.NewOwner.topic,
-      resolverAbi.events.NameChanged.topic,
-    ],
+    topic0: [resolverAbi.events.NameChanged.topic],
   });
 
 export function formatAddressTopic(address: string): string {

@@ -5,7 +5,7 @@ description: "Internal Squid"
 build:
 deploy:
   env:
-    RPC_BERA_HTTP: ${{ secrets.RPC_BERA_HTTP }}
+    RPC_BERACHAIN_HTTP: ${{ secrets.RPC_BERACHAIN_HTTP }}
   addons:
     postgres:
     # rpc:
