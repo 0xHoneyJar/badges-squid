@@ -1,6 +1,6 @@
 manifestVersion: subsquid.io/v0.1
 name: internal-squid
-version: 8
+version: 9
 description: "Internal Squid"
 build:
 deploy:
